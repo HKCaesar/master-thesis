@@ -4,10 +4,13 @@
 #include <sstream>
 #include <fstream>
 #include <opencv2/opencv.hpp>
-// #include "opencv2/xfeatures2d.hpp"
 
+// This needs to be before the SURF include
 using std::string;
 using std::vector;
+
+#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/nonfree/nonfree.hpp>
 
 // Make sure directory exists
 void mkdirp(string path) {
@@ -126,14 +129,18 @@ void test_image_pair(string path, string path1, string path2) {
 
     // Perform analysis with different configs
     cv::Ptr<cv::ORB> orb = cv::ORB::create(400);
-    cv::Ptr<cv::MSER> fast = cv::MSER::create(400);
+    cv::Ptr<cv::MSER> mser = cv::MSER::create(400);
     cv::Ptr<cv::BRISK> brisk = cv::BRISK::create();
+    cv::Ptr<cv::KAZE> kaze = cv::KAZE::create();
+    // cv::Ptr<cv::SIFT> sift = cv::SIFT::create();
     // cv::Ptr<cv::SURF> surf = cv::SURF::create(400);
 
-    features_analysis(path + "/ORB400", image1, image2, orb, orb);
-    features_analysis(path + "/SURF400", image1, image2, fast, orb);
+    features_analysis(path + "/ORB", image1, image2, orb, orb);
+    features_analysis(path + "/MSER-ORB", image1, image2, mser, orb);
     features_analysis(path + "/BRISK", image1, image2, brisk, brisk);
-
+    features_analysis(path + "/BRISK-ORB", image1, image2, brisk, orb);
+    features_analysis(path + "/KAZE", image1, image2, kaze, kaze);
+    features_analysis(path + "/KAZE-ORB", image1, image2, kaze, orb);
 }
 
 int main(int argc, char* argv[]) {
@@ -160,4 +167,8 @@ int main(int argc, char* argv[]) {
     test_image_pair(results_dir + "/water",
             data + "/features-areas/water1.jpg",
             data + "/features-areas/water2.jpg");
+
+    test_image_pair(results_dir + "/industrial",
+            data + "/features-areas/industrial1.jpg",
+            data + "/features-areas/industrial2.jpg");
 }
