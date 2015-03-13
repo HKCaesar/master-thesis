@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <opencv2/opencv.hpp>
 // #include "opencv2/xfeatures2d.hpp"
 
@@ -11,6 +12,20 @@ using std::vector;
 // Make sure directory exists
 void mkdirp(string path) {
     system((std::string("mkdir -p ") + path).c_str());
+}
+
+void write_matches_list(string path, vector<cv::KeyPoint> kp1, vector<cv::KeyPoint> kp2, vector<cv::DMatch> matches) {
+    std::ofstream ofs((path + "/matches.txt").c_str());
+    ofs << "# Keypoints matches file, x y x y dist" << std::endl;
+    for (size_t i = 0; i < matches.size(); i++) {
+        // Is train/query kp1 or kp2 ?
+        ofs << kp1[matches[i].queryIdx].pt.x
+            << " " << kp1[matches[i].queryIdx].pt.y
+            << " " << kp2[matches[i].trainIdx].pt.x
+            << " " << kp2[matches[i].trainIdx].pt.y
+            << " " << matches[i].distance
+            << std::endl;
+    }
 }
 
 void write_matches_image(string path, cv::Mat image1, cv::Mat image2,
@@ -87,6 +102,7 @@ void features_analysis(string path, cv::Mat image1, cv::Mat image2, cv::Ptr<cv::
         if (dist > max_dist) max_dist = dist;
     }
 
+    write_matches_list(path, keypoint1, keypoint2, matches);
     write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 1e9);
     write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 500);
     write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 400);
