@@ -4,9 +4,9 @@ project(MasterThesis)
 
 find_package(OpenCV REQUIRED)
 
-add_executable(features
-    src/features.cpp
+add_executable(features_analysis
+    src/features_analysis.cpp
     )
 
-target_link_libraries(features ${OpenCV_LIBS})
+target_link_libraries(features_analysis ${OpenCV_LIBS})
 
