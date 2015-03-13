@@ -129,5 +129,19 @@ int main(int argc, char* argv[]) {
     string data = std::string(argv[1]);
     string results_dir = std::string(argv[2]) + "/features_analysis";
 
-    test_image_pair(results_dir + "/ab", data + "/alinta-stockpile-quarter/DSC_5590.JPG", data + "/alinta-stockpile-quarter/DSC_5591.JPG");
+    test_image_pair(results_dir + "/lake",
+            data + "/features-areas/lake1.jpg",
+            data + "/features-areas/lake2.jpg");
+
+    test_image_pair(results_dir + "/desert",
+            data + "/features-areas/desert1.jpg",
+            data + "/features-areas/desert2.jpg");
+
+    test_image_pair(results_dir + "/cars",
+            data + "/features-areas/cars1.jpg",
+            data + "/features-areas/cars2.jpg");
+
+    test_image_pair(results_dir + "/water",
+            data + "/features-areas/water1.jpg",
+            data + "/features-areas/water2.jpg");
 }
