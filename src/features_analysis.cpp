@@ -175,4 +175,8 @@ int main(int argc, char* argv[]) {
     test_image_pair(results_dir + "/industrial",
             data + "/features-areas/industrial1.jpg",
             data + "/features-areas/industrial2.jpg");
+
+    test_image_pair(results_dir + "/entire-image-quarter",
+            data + "/alinta-stockpile-quarter/DSC_5521.JPG",
+            data + "/alinta-stockpile-quarter/DSC_5522.JPG");
 }
