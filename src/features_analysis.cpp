@@ -4,13 +4,10 @@
 #include <sstream>
 #include <fstream>
 #include <opencv2/opencv.hpp>
+#include "opencv2/xfeatures2d.hpp"
 
-// This needs to be before the SURF include
 using std::string;
 using std::vector;
-
-#include <opencv2/features2d/features2d.hpp>
-#include <opencv2/nonfree/nonfree.hpp>
 
 // Make sure directory exists
 void mkdirp(string path) {
@@ -113,10 +110,13 @@ void features_analysis(string path, cv::Mat image1, cv::Mat image2, cv::Ptr<cv::
     write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 200);
     write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 100);
     write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 50);
+    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 10);
 }
 
 // Run features analysis test for an image pair
 void test_image_pair(string path, string path1, string path2) {
+    std::cout << "Testing image pair " << path << std::endl;
+
     // Load images
     cv::Mat image1 = cv::imread(path1);
     cv::Mat image2 = cv::imread(path2);
@@ -132,8 +132,8 @@ void test_image_pair(string path, string path1, string path2) {
     cv::Ptr<cv::MSER> mser = cv::MSER::create(400);
     cv::Ptr<cv::BRISK> brisk = cv::BRISK::create();
     cv::Ptr<cv::KAZE> kaze = cv::KAZE::create();
-    // cv::Ptr<cv::SIFT> sift = cv::SIFT::create();
-    // cv::Ptr<cv::SURF> surf = cv::SURF::create(400);
+    cv::Ptr<cv::xfeatures2d::SIFT> sift = cv::xfeatures2d::SIFT::create();
+    cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create(400);
 
     features_analysis(path + "/ORB", image1, image2, orb, orb);
     features_analysis(path + "/MSER-ORB", image1, image2, mser, orb);
@@ -141,6 +141,8 @@ void test_image_pair(string path, string path1, string path2) {
     features_analysis(path + "/BRISK-ORB", image1, image2, brisk, orb);
     features_analysis(path + "/KAZE", image1, image2, kaze, kaze);
     features_analysis(path + "/KAZE-ORB", image1, image2, kaze, orb);
+    features_analysis(path + "/SIFT", image1, image2, sift, sift);
+    features_analysis(path + "/SURF", image1, image2, surf, surf);
 }
 
 int main(int argc, char* argv[]) {
