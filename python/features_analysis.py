@@ -31,11 +31,15 @@ if __name__ == "__main__":
     f = plt.figure(figsize=(8,4))
     ax = f.add_subplot(111)
     ax.hist(matches[:,4], bins=50, normed=True)
+    ax.set_xlabel("Distance")
+    ax.set_ylabel("Frequency")
     f.savefig(path + "histogram_distances.pdf", bbox_inches='tight')
 
     # Matches angle histogram
     angles = angle(matches, shape)
     f = plt.figure(figsize=(8,4))
     ax = f.add_subplot(111)
+    ax.set_xlabel("Match line angle")
+    ax.set_ylabel("Frequency")
     ax.hist(180/np.pi * np.arctan(angles), bins=100)
     f.savefig(path + "/histogram_angles.pdf", bbox_inches='tight')
