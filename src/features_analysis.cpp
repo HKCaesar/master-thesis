@@ -128,12 +128,13 @@ void test_image_pair(string path, string path1, string path2) {
     mkdirp(path);
 
     // Perform analysis with different configs
-    cv::Ptr<cv::ORB> orb = cv::ORB::create(400);
-    cv::Ptr<cv::MSER> mser = cv::MSER::create(400);
+    cv::Ptr<cv::ORB> orb = cv::ORB::create();
+    cv::Ptr<cv::MSER> mser = cv::MSER::create();
     cv::Ptr<cv::BRISK> brisk = cv::BRISK::create();
     cv::Ptr<cv::KAZE> kaze = cv::KAZE::create();
     cv::Ptr<cv::xfeatures2d::SIFT> sift = cv::xfeatures2d::SIFT::create();
-    cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create(400);
+    cv::Ptr<cv::xfeatures2d::SURF> surf400 = cv::xfeatures2d::SURF::create(400);
+    cv::Ptr<cv::xfeatures2d::SURF> surf200 = cv::xfeatures2d::SURF::create(200);
 
     features_analysis(path + "/ORB", image1, image2, orb, orb);
     features_analysis(path + "/MSER-ORB", image1, image2, mser, orb);
@@ -142,7 +143,8 @@ void test_image_pair(string path, string path1, string path2) {
     features_analysis(path + "/KAZE", image1, image2, kaze, kaze);
     features_analysis(path + "/KAZE-ORB", image1, image2, kaze, orb);
     features_analysis(path + "/SIFT", image1, image2, sift, sift);
-    features_analysis(path + "/SURF", image1, image2, surf, surf);
+    features_analysis(path + "/SURF-400", image1, image2, surf400, surf400);
+    features_analysis(path + "/SURF-200", image1, image2, surf200, surf200);
 }
 
 int main(int argc, char* argv[]) {
