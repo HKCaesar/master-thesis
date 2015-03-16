@@ -4,7 +4,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-def angle(matches, shape):
+def match_angle(matches, shape):
     """Angle of the line connecting two matches
     when putting the two images side by side"""
 
@@ -27,7 +27,7 @@ def angles_histogram(path, matches, angles, threshold):
         ax = f.add_subplot(111)
         ax.set_xlabel("Match line angle")
         ax.set_ylabel("Frequency")
-        ax.hist(180/np.pi * np.arctan(angles), bins=100)
+        ax.hist(180/np.pi * np.arctan(angles), bins=100, range=(-30, 30))
         f.savefig(path, bbox_inches='tight')
 
 if __name__ == "__main__":
@@ -50,10 +50,11 @@ if __name__ == "__main__":
     distances_histogram(path + "/histogram_distances.pdf", matches)
 
     # Matches angle histogram
-    angles = angle(matches, shape)
+    angles = match_angle(matches, shape)
     angles_histogram(path + "/histogram_angles_all.pdf", matches, angles, None)
     angles_histogram(path + "/histogram_angles_10.pdf", matches, angles, 10)
     angles_histogram(path + "/histogram_angles_50.pdf", matches, angles, 50)
     angles_histogram(path + "/histogram_angles_100.pdf", matches, angles, 100)
     angles_histogram(path + "/histogram_angles_200.pdf", matches, angles, 200)
     angles_histogram(path + "/histogram_angles_300.pdf", matches, angles, 300)
+    angles_histogram(path + "/histogram_angles_400.pdf", matches, angles, 400)
