@@ -13,7 +13,7 @@ def match_angle(matches, shape):
     when putting the two images side by side"""
 
     x1, y1, x2, y2 = matches[:,0], matches[:,1], matches[:,2], matches[:,3]
-    return (y2 - y1) / (x2 - x1 + shape[1])
+    return (180.0/np.pi)*np.arctan((y2 - y1) / (x2 - x1 + shape[1]))
 
 def distances_plot(path, sorted_matches):
     f = plt.figure(figsize=features_figsize)
@@ -27,8 +27,8 @@ def distances_plot(path, sorted_matches):
 def angle_spread_plot(path, sorted_angles):
     f = plt.figure(figsize=features_figsize)
     ax = f.add_subplot(111)
-    ax.plot(np.maximum.accumulate(angles) - np.minimum.accumulate(angles))
     ax.plot(angles)
+    # ax.set_ylim([-2, 2])
     f.savefig(path, bbox_inches='tight')
     plt.close(f)
 
