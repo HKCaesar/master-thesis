@@ -57,3 +57,10 @@ if __name__ == "__main__":
 
             # Copy view_angle_script.py
             shutil.copy(va_filename, root)
+
+            # Create empty outlier_threshold.txt unless it exists
+            otf = os.path.join(root, "outlier_threshold.txt")
+            if not os.path.isfile(otf):
+                f = open(otf, "w")
+                f.write(" ")
+                f.close()
