@@ -1,5 +1,7 @@
 #include <vector>
 #include <string>
+#include <tuple>
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -8,17 +10,51 @@
 
 using std::string;
 using std::vector;
+using std::tuple;
+using std::make_tuple;
 
 // Make sure directory exists
 void mkdirp(string path) {
     system((std::string("mkdir -p ") + path).c_str());
 }
 
+// Returns the list of indexes that sort the match array by distance
+vector<size_t> argsort(vector<cv::DMatch> matches) {
+    // Extend the vector with indexes
+    vector< tuple<size_t, cv::DMatch> > indexed_matches;
+    size_t n = 0;
+    for (n = 0; n < matches.size(); ++n) {
+        indexed_matches.push_back(make_tuple(n, matches[n]));
+    }
+
+    // Sort by distance
+    std::sort(indexed_matches.begin(), indexed_matches.end(),
+            [](const tuple<size_t, cv::DMatch>& a, const tuple<size_t, cv::DMatch>& b) {
+                return std::get<1>(a).distance < std::get<1>(b).distance;
+            });
+
+    // Extract the index
+    vector<size_t> indexes(matches.size());
+    for (size_t i = 0; i < matches.size(); i++) {
+        indexes[i] = std::get<0>(indexed_matches[i]);
+    }
+    return indexes;
+}
+
+template<typename T>
+vector<T> reorder(const vector<T>& input, vector<size_t> indexes) {
+    vector<T> output(input.size());
+    for (size_t i = 0; i < input.size(); i++) {
+        output[i] = input[indexes[i]];
+    }
+    return output;
+}
+
 void write_matches_list(string path, vector<cv::KeyPoint> kp1, vector<cv::KeyPoint> kp2, vector<cv::DMatch> matches) {
     std::ofstream ofs((path + "/matches.txt").c_str());
     ofs << "# Keypoints matches file, x y x y dist" << std::endl;
     for (size_t i = 0; i < matches.size(); i++) {
-        // Is train/query kp1 or kp2 ?
+        // query is kp1, train is kp2 (see declaration of matcher.match())
         ofs << kp1[matches[i].queryIdx].pt.x
             << " " << kp1[matches[i].queryIdx].pt.y
             << " " << kp2[matches[i].trainIdx].pt.x
@@ -31,17 +67,15 @@ void write_matches_list(string path, vector<cv::KeyPoint> kp1, vector<cv::KeyPoi
 void write_matches_image(string path, cv::Mat image1, cv::Mat image2,
                       vector<cv::KeyPoint> keypoint1, vector<cv::KeyPoint> keypoint2,
                       vector<cv::DMatch> matches,
-                      double threshold) {
-    // Filter based on distance
-    vector<cv::DMatch> good_matches;
-    for (size_t i = 0; i < matches.size(); i++) {
-        if (matches[i].distance <= threshold) {
-            good_matches.push_back(matches[i]);
-        }
+                      size_t nb_of_features) {
+    // Maximum wrap
+    if (nb_of_features > matches.size()) {
+        nb_of_features = matches.size();
     }
-    if (good_matches.size() == 0) {
-        return;
-    }
+
+    // Keep nb_of_features elements
+    vector<cv::DMatch> good_matches(matches.begin(), matches.begin() + nb_of_features);
+
     // Draw
     cv::Mat img;
     cv::drawMatches(image1, keypoint1, image2, keypoint2,
@@ -50,7 +84,7 @@ void write_matches_image(string path, cv::Mat image1, cv::Mat image2,
 
     // Write to file
     std::ostringstream oss;
-    oss << threshold;
+    oss << nb_of_features;
     cv::imwrite(path + "/" + oss.str() + ".jpg", img);
 }
 
@@ -82,6 +116,7 @@ void features_analysis(string path, cv::Mat image1, cv::Mat image2, cv::Ptr<cv::
         std::cerr << "Empty descriptor!" << std::endl;
     }
 
+    // FLANN needs type of descriptor to be CV_32F
     if (descriptor1.type()!= CV_32F) {
         descriptor1.convertTo(descriptor1, CV_32F);
     }
@@ -94,23 +129,20 @@ void features_analysis(string path, cv::Mat image1, cv::Mat image2, cv::Ptr<cv::
     vector<cv::DMatch> matches;
     matcher.match(descriptor1, descriptor2, matches);
 
-    // Quick calculation of max and min distances between keypoints
-    double min_dist, max_dist;
-    for (int i = 0; i < descriptor1.rows; i++) {
-        double dist = matches[i].distance;
-        if (dist < min_dist) min_dist = dist;
-        if (dist > max_dist) max_dist = dist;
-    }
+    // Sort matches by distance
+    // Note that keypoints don't need to be reordered because the index
+    // of a match's keypoint is stored in match.queryIdx and match.trainIdx
+    // (i.e. is not given implicitly by the order of the keypoint vector)
+    vector<size_t> order = argsort(matches);
+    matches = reorder(matches, order);
 
+    // Output matches and images
     write_matches_list(path, keypoint1, keypoint2, matches);
+    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 1);
+    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 5);
+    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 25);
+    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 125);
     write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 1e9);
-    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 500);
-    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 400);
-    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 300);
-    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 200);
-    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 100);
-    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 50);
-    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 10);
 }
 
 // Run features analysis test for an image pair

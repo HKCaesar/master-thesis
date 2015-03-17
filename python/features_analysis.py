@@ -4,6 +4,8 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
+features_figsize = (8,4)
+
 def match_angle(matches, shape):
     """Angle of the line connecting two matches
     when putting the two images side by side"""
@@ -11,12 +13,19 @@ def match_angle(matches, shape):
     x1, y1, x2, y2 = matches[:,0], matches[:,1], matches[:,2], matches[:,3]
     return (y2 - y1) / (x2 - x1 + shape[1])
 
-def distances_histogram(path, matches):
-    f = plt.figure(figsize=(8,4))
+def distances_plot(path, sorted_matches):
+    f = plt.figure(figsize=features_figsize)
     ax = f.add_subplot(111)
-    ax.hist(matches[:,4], bins=50)
-    ax.set_xlabel("Distance")
-    ax.set_ylabel("Count")
+    ax.plot(sorted_matches[:,4])
+    ax.set_xlabel("Feature number (by distance)")
+    ax.set_ylabel("Distance")
+    f.savefig(path, bbox_inches='tight')
+
+def angle_spread_plot(path, sorted_angles):
+    f = plt.figure(figsize=features_figsize)
+    ax = f.add_subplot(111)
+    ax.plot(np.maximum.accumulate(angles) - np.minimum.accumulate(angles))
+    ax.plot(angles)
     f.savefig(path, bbox_inches='tight')
 
 def angles_histogram(path, matches, angles, threshold):
@@ -44,17 +53,11 @@ if __name__ == "__main__":
     shape = kp1.shape
 
     # Load matches, keypoints and distances
-    matches = np.loadtxt(path + "/matches.txt")
+    matches = np.loadtxt(path + "/matches.txt", comments="#")
 
-    # Distances histogram
-    distances_histogram(path + "/histogram_distances.pdf", matches)
+    # Distances plot
+    distances_plot(path + "/plot_distances.pdf", matches)
 
-    # Matches angle histogram
+    # Angle spread plot
     angles = match_angle(matches, shape)
-    angles_histogram(path + "/histogram_angles_all.pdf", matches, angles, None)
-    angles_histogram(path + "/histogram_angles_10.pdf", matches, angles, 10)
-    angles_histogram(path + "/histogram_angles_50.pdf", matches, angles, 50)
-    angles_histogram(path + "/histogram_angles_100.pdf", matches, angles, 100)
-    angles_histogram(path + "/histogram_angles_200.pdf", matches, angles, 200)
-    angles_histogram(path + "/histogram_angles_300.pdf", matches, angles, 300)
-    angles_histogram(path + "/histogram_angles_400.pdf", matches, angles, 400)
+    angle_spread_plot(path + "/plot_angle_spread.pdf", angles)
