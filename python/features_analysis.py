@@ -3,8 +3,11 @@
 import sys
 import os
 import os.path
+import shutil
 import numpy as np
 import matplotlib.pyplot as plt
+
+from view_angle import __file__ as va_filename
 
 features_figsize = (8,4)
 
@@ -28,7 +31,7 @@ def angle_spread_plot(path, sorted_angles):
     f = plt.figure(figsize=features_figsize)
     ax = f.add_subplot(111)
     ax.plot(angles)
-    # ax.set_ylim([-2, 2])
+    ax.set_ylim([-3, 3])
     f.savefig(path, bbox_inches='tight')
     plt.close(f)
 
@@ -51,3 +54,6 @@ if __name__ == "__main__":
             # Angle spread plot
             angles = match_angle(matches, shape)
             angle_spread_plot(os.path.join(root, "plot_angle_spread.pdf"), angles)
+
+            # Copy view_angle_script.py
+            shutil.copy(va_filename, root)
