@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <cmath>
 #include <opencv2/opencv.hpp>
 #include "opencv2/xfeatures2d.hpp"
 
@@ -138,11 +139,9 @@ void features_analysis(string path, cv::Mat image1, cv::Mat image2, cv::Ptr<cv::
 
     // Output matches and images
     write_matches_list(path, keypoint1, keypoint2, matches);
-    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 1);
-    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 5);
-    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 25);
-    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 125);
-    write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 1e9);
+    for (size_t nb_exp = 0; nb_exp < 11; nb_exp++) {
+        write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, pow(2, nb_exp));
+    }
     std::ofstream ofs((path + "/shape.txt").c_str());
     ofs << image1.rows << " " << image1.cols << std::endl;
 }
