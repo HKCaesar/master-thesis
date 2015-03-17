@@ -143,6 +143,8 @@ void features_analysis(string path, cv::Mat image1, cv::Mat image2, cv::Ptr<cv::
     write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 25);
     write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 125);
     write_matches_image(path, image1, image2, keypoint1, keypoint2, matches, 1e9);
+    std::ofstream ofs((path + "/shape.txt").c_str());
+    ofs << image1.rows << " " << image1.cols << std::endl;
 }
 
 // Run features analysis test for an image pair
