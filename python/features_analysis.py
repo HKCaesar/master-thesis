@@ -22,7 +22,7 @@ def distances_plot(path, sorted_matches):
     f = plt.figure(figsize=features_figsize)
     ax = f.add_subplot(111)
     ax.plot(sorted_matches[:,4])
-    ax.set_xlabel("Feature number (by distance)")
+    ax.set_xlabel("Match number (by distance)")
     ax.set_ylabel("Distance")
     f.savefig(path, bbox_inches='tight')
     plt.close(f)

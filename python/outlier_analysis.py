@@ -11,9 +11,9 @@ from features_analysis import match_angle, features_figsize
 def outlier_frequency_plot(path, angles, threshold):
     f = plt.figure(figsize=features_figsize)
     ax = f.add_subplot(111)
-    ax.plot(100 * np.cumsum(angles > threshold) / angles.size)
-    ax.set_xlabel("Feature number (by distance)")
-    ax.set_ylabel("Outlier frequency (%)")
+    ax.plot(100 * np.cumsum(np.abs(angles) > threshold) / angles.size)
+    ax.set_xlabel("Match number (by distance)")
+    ax.set_ylabel("Outlier fraction (%)")
     f.savefig(path, bbox_inches='tight')
 
 if __name__ == "__main__":
