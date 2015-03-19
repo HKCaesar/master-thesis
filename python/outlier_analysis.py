@@ -6,7 +6,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-from features_analysis import match_angle, base_plot
+from features_common import match_angle, base_plot
 
 def outlier_frequency_plot(path, angles, threshold):
     f, ax = base_plot()
@@ -20,11 +20,11 @@ def outlier_frequency_plot(path, angles, threshold):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: ./outlier_analysis.py <dir>")
-        sys.exit(-1)
+        path = "."
+    else:
+        path = sys.argv[1]
 
     # Produce outlier plots for all directories containing outlier_threshold.txt
-    path = sys.argv[1]
     for root, subdirs, files in os.walk(path):
         if "matches.txt" in files:
             shape = np.loadtxt(os.path.join(root, "shape.txt"))
