@@ -6,7 +6,6 @@ import os.path
 import shutil
 import numpy as np
 import matplotlib.pyplot as plt
-from spatial_chi2 import spatial_chi2_plot, divide_count
 
 from view_angle import __file__ as va_filename
 
@@ -36,6 +35,30 @@ def angle_spread_plot(path, angles):
     f.savefig(path, bbox_inches='tight')
     plt.close(f)
 
+def spatial_coverage_plot(path, matches, image_shape):
+    N = matches.shape[0]
+    count = int(np.sqrt(N))
+    # Number of points in grid cells
+    areas = np.zeros((count, count))
+    cell_size = image_shape / count
+    coverage = np.zeros(N)
+    for (i, (x1, y1, x2, y2, dist)) in enumerate(matches):
+        # Euclidian division to get cell coordinate
+        # Only consider image 1 keypoints
+        areas[y1 // cell_size[0], x1 // cell_size[1]] += 1
+        coverage[i] = np.sum(areas.flatten() > 0) / areas.size
+
+    f = plt.figure(figsize=features_figsize)
+    ax = f.add_subplot(111)
+    ax.plot(100 * coverage)
+
+    ax.set_ylim([0, 100])
+    ax.set_xlabel("Match number (by distance)")
+    ax.set_ylabel("Spatial coverage (%)")
+
+    f.savefig(path, bbox_inches='tight')
+    plt.close(f)
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: ./features_analysis.py <dir>")
@@ -55,6 +78,9 @@ if __name__ == "__main__":
             # Angle spread plot
             angles = match_angle(matches, shape)
             angle_spread_plot(os.path.join(root, "plot_angle_spread.pdf"), angles)
+
+            # Spatial coverage plot
+            spatial_coverage_plot(os.path.join(root, "plot_spatial_coverage.pdf"), matches, shape)
 
             # Copy view_angle_script.py
             shutil.copy(va_filename, root)
