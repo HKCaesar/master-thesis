@@ -17,6 +17,7 @@ def outlier_frequency_plot(path, angles, threshold):
     ax.set_xlabel("Match number (by distance)")
     ax.set_ylabel("Outlier fraction (%)")
     f.savefig(path, bbox_inches='tight')
+    plt.close(f)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

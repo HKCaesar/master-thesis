@@ -21,7 +21,8 @@ if __name__ == "__main__":
 
     f = plt.figure()
     ax = f.add_subplot(111)
-    ax.plot(angles)
+    ax.vlines(np.arange(angles.size), 0, angles)
+    ax.set_ylim([-80, 80])
     ax.set_xlabel("Feature number (by distance)")
     ax.set_ylabel("Angle")
     plt.show(f)
