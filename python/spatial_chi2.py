@@ -3,6 +3,10 @@ from scipy.stats import poisson, chi2, chisquare
 import matplotlib.pyplot as plt
 
 def divide_count(matches, image_shape, count):
+    """
+    Divide the image in a regular grid and returns the number of
+    matches per grid cell
+    """
     # Number of points in grid cells
     areas = np.zeros((count, count))
     cell_size = image_shape / count

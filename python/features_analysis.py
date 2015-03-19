@@ -6,7 +6,7 @@ import os.path
 import shutil
 import numpy as np
 import matplotlib.pyplot as plt
-from spatial_chi2 import spatial_chi2_plot
+from spatial_chi2 import spatial_chi2_plot, divide_count
 
 from view_angle import __file__ as va_filename
 
@@ -28,7 +28,7 @@ def distances_plot(path, sorted_matches):
     f.savefig(path, bbox_inches='tight')
     plt.close(f)
 
-def angle_spread_plot(path, sorted_angles):
+def angle_spread_plot(path, angles):
     f = plt.figure(figsize=features_figsize)
     ax = f.add_subplot(111)
     ax.plot(angles)
