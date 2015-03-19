@@ -6,12 +6,14 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-from features_analysis import match_angle, features_figsize
+from features_analysis import match_angle, base_plot
 
 def outlier_frequency_plot(path, angles, threshold):
-    f = plt.figure(figsize=features_figsize)
-    ax = f.add_subplot(111)
-    ax.plot(100 * np.cumsum(np.abs(angles) > threshold) / angles.size)
+    f, ax = base_plot()
+    w = 80 # window size
+    running_avg = np.convolve(np.array(np.abs(angles) > threshold, dtype=np.float), np.ones((w,))/w, mode="valid")
+    # offset by half window size
+    ax.plot(np.arange(w/2-1, angles.size - w/2), 100 * running_avg)
     ax.set_xlabel("Match number (by distance)")
     ax.set_ylabel("Outlier fraction (%)")
     f.savefig(path, bbox_inches='tight')
