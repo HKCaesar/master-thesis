@@ -6,10 +6,16 @@ import os.path
 import shutil
 import numpy as np
 import matplotlib.pyplot as plt
-
 from view_angle import __file__ as va_filename
 
-features_figsize = (8,4)
+def base_plot(figsize=(8,4)):
+    f = plt.figure(figsize=figsize)
+    ax = f.add_subplot(111)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+    return f, ax
 
 def match_angle(matches, shape):
     """Angle of the line connecting two matches
@@ -19,8 +25,7 @@ def match_angle(matches, shape):
     return (180.0/np.pi)*np.arctan((y2 - y1) / (x2 - x1 + shape[1]))
 
 def distances_plot(path, sorted_matches):
-    f = plt.figure(figsize=features_figsize)
-    ax = f.add_subplot(111)
+    f, ax = base_plot()
     ax.plot(sorted_matches[:,4])
     ax.set_xlabel("Match number (by distance)")
     ax.set_ylabel("Distance")
@@ -28,8 +33,7 @@ def distances_plot(path, sorted_matches):
     plt.close(f)
 
 def angle_spread_plot(path, angles):
-    f = plt.figure(figsize=features_figsize)
-    ax = f.add_subplot(111)
+    f, ax = base_plot()
     ax.plot(angles)
     ax.set_ylim([-3, 3])
     f.savefig(path, bbox_inches='tight')
@@ -48,8 +52,7 @@ def spatial_coverage_plot(path, matches, image_shape):
         areas[y1 // cell_size[0], x1 // cell_size[1]] += 1
         coverage[i] = np.sum(areas.flatten() > 0) / areas.size
 
-    f = plt.figure(figsize=features_figsize)
-    ax = f.add_subplot(111)
+    f, ax = base_plot()
     ax.plot(100 * coverage)
 
     ax.set_ylim([0, 100])
