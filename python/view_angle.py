@@ -6,7 +6,7 @@ import os.path
 import numpy as np
 import matplotlib.pyplot as plt
 
-from features_common import match_angle
+from features_common import match_angle, base_plot
 
 if __name__ == "__main__":
     if len(sys.argv) >= 2:
@@ -19,8 +19,7 @@ if __name__ == "__main__":
 
     angles = match_angle(matches, shape)
 
-    f = plt.figure()
-    ax = f.add_subplot(111)
+    f, ax = base_plot()
     ax.vlines(np.arange(angles.size), 0, angles)
     ax.set_ylim([-80, 80])
     ax.set_xlabel("Feature number (by distance)")

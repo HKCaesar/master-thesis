@@ -22,13 +22,16 @@ def distances_plot(path, sorted_matches):
     ax.plot(sorted_matches[:,4])
     ax.set_xlabel("Match number (by distance)")
     ax.set_ylabel("Distance")
+    ax.set_ylim([0, np.max(sorted_matches[:,4])])
     f.savefig(path, bbox_inches='tight')
     plt.close(f)
 
 def angle_spread_plot(path, angles):
     f, ax = base_plot()
-    ax.plot(angles)
+    ax.vlines(np.arange(angles.size), 0, angles)
     ax.set_ylim([-3, 3])
+    ax.set_xlabel("Feature number (by distance)")
+    ax.set_ylabel("Angle")
     f.savefig(path, bbox_inches='tight')
     plt.close(f)
 
