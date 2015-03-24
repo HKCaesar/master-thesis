@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def base_plot(figsize=(8,4)):
+def base_plot(figsize=(4,2)):
     f = plt.figure(figsize=figsize)
     ax = f.add_subplot(111)
     ax.spines["top"].set_visible(False)
@@ -20,7 +20,7 @@ def match_angle(matches, shape):
 def distances_plot(path, sorted_matches):
     f, ax = base_plot()
     ax.plot(sorted_matches[:,4])
-    ax.set_xlabel("Match number (by distance)")
+    ax.set_xlabel("Match number")
     ax.set_ylabel("Distance")
     ax.set_ylim([0, np.max(sorted_matches[:,4])])
     f.savefig(path, bbox_inches='tight')
@@ -30,7 +30,7 @@ def angle_spread_plot(path, angles):
     f, ax = base_plot()
     ax.vlines(np.arange(angles.size), 0, angles)
     ax.set_ylim([-3, 3])
-    ax.set_xlabel("Feature number (by distance)")
+    ax.set_xlabel("Feature number")
     ax.set_ylabel("Angle")
     f.savefig(path, bbox_inches='tight')
     plt.close(f)
@@ -52,7 +52,7 @@ def spatial_coverage_plot(path, matches, image_shape):
     ax.plot(100 * coverage)
 
     ax.set_ylim([0, 100])
-    ax.set_xlabel("Match number (by distance)")
+    ax.set_xlabel("Match number")
     ax.set_ylabel("Spatial coverage (%)")
 
     f.savefig(path, bbox_inches='tight')

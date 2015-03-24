@@ -11,8 +11,8 @@ from features_common import match_angle, base_plot
 def outlier_frequency_plot(path, angles, threshold):
     f, ax = base_plot()
     ax.plot(100 * np.cumsum(np.abs(angles) > threshold) / angles.size)
-    ax.set_xlabel("Match number (by distance)")
-    ax.set_ylabel("Cumulative outlier fraction (%)")
+    ax.set_xlabel("Match number")
+    ax.set_ylabel("Outlier fraction (%)")
     ax.set_ylim([0, 100])
     f.savefig(path, bbox_inches='tight')
     plt.close(f)
