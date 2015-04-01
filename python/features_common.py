@@ -35,7 +35,7 @@ def angle_spread_plot(path, angles):
     f.savefig(path, bbox_inches='tight')
     plt.close(f)
 
-def spatial_coverage_plot(path, matches, image_shape):
+def spatial_coverage(matches, image_shape):
     N = matches.shape[0]
     count = int(np.sqrt(N))
     # Number of points in grid cells
@@ -47,6 +47,11 @@ def spatial_coverage_plot(path, matches, image_shape):
         # Only consider image 1 keypoints
         areas[y1 // cell_size[0], x1 // cell_size[1]] += 1
         coverage[i] = np.sum(areas.flatten() > 0) / areas.size
+
+    return coverage
+
+def spatial_coverage_plot(path, matches, image_shape):
+    coverage = spatial_coverage(matches, image_shape)
 
     f, ax = base_plot()
     ax.plot(100 * coverage)
