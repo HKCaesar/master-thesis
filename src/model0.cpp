@@ -117,15 +117,14 @@ struct ImageFeatures {
     const DataSetPair& data_set;
 };
 
-// Simple side by side pair initialization
-
-// Abstract model interface
-
 // struct Model0 : public Model {
 struct Model0 {
     Model0(const ImageFeatures& f, array<double, 6> left_cam, array<double, 6> right_cam) : features(f) {
         // Initialize from parent
         // (for now hard coded left-right images)
+
+        // Internals from calibration report
+        internals = {48.3355, 0.0093, -0.0276};
 
         // Initialize cameras side by side
         cameras[0] = left_cam;
@@ -136,6 +135,9 @@ struct Model0 {
     }
 
     const ImageFeatures& features;
+
+    // 3 dof internals: {f, ppx, ppy}
+    array<double, 3> internals;
 
     // Parameters
     vector< array<double, 6> > cameras; // 6 dof cameras
