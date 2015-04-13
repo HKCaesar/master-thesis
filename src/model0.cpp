@@ -92,8 +92,9 @@ void write_matches_image(string path, cv::Mat image1, cv::Mat image2,
 struct ImageFeatures {
     ImageFeatures(const DataSetPair& ds, const size_t maximum_number_of_matches) : data_set(ds) {
         cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create();
-        cv::Ptr<cv::FeatureDetector> detector = surf;
-        cv::Ptr<cv::DescriptorExtractor> descriptor = surf;
+        cv::Ptr<cv::xfeatures2d::SIFT> sift = cv::xfeatures2d::SIFT::create();
+        cv::Ptr<cv::FeatureDetector> detector = sift;
+        cv::Ptr<cv::DescriptorExtractor> descriptor = sift;
 
         // Detect and compute descriptors
         detector->detect(data_set.image_left, keypoint1);
@@ -195,6 +196,8 @@ void print_array(array<double, N> arr) {
 }
 
 int main(int argc, char* argv[]) {
+    google::InitGoogleLogging(argv[0]);
+
     if (argc < 3) {
         std::cerr << "Usage: ./model0 data_dir results_dir" << std::endl;
         return -1;
@@ -215,11 +218,11 @@ int main(int argc, char* argv[]) {
     std::cout << "Matching features..." << std::endl;
     ImageFeatures features(data_set, 10);
 
-    exit(0);
-
     // Create model
     std::cout << "Setting up model..." << std::endl;
-    Model0 model(features, {48.3355e-3, 0.0093e-3, -0.0276e-3}, {0, 0, 800, 0, 0, 0}, {0, 0, 800, 0, 0, 0});
+    Model0 model(features, {48.3355e-3, 0.0093e-3, -0.0276e-3}, {0, 0, 269, 0, 0, 0}, {0, 0, 269, 0, 0, 0});
+
+    const double pixel_size = 0.0085e-3;
 
     // Setup solver
     std::cout << "Solving..." << std::endl;
@@ -227,7 +230,7 @@ int main(int argc, char* argv[]) {
     for (size_t i = 0; i < model.features.observations.size(); i++) {
         // Residual for left cam
 		ceres::CostFunction* cost_function_left =
-            Model0ReprojectionError::create(model.internal, model.features.observations[i][0], model.features.observations[i][1]);
+            Model0ReprojectionError::create(model.internal, pixel_size*model.features.observations[i][0], pixel_size*model.features.observations[i][1]);
 		problem.AddResidualBlock(cost_function_left,
 			NULL,
 			model.cameras[0].data(),
@@ -236,13 +239,15 @@ int main(int argc, char* argv[]) {
 
         // Residual for right cam
 		ceres::CostFunction* cost_function_right =
-            Model0ReprojectionError::create(model.internal, model.features.observations[i][2], model.features.observations[i][3]);
+            Model0ReprojectionError::create(model.internal, pixel_size*model.features.observations[i][2], pixel_size*model.features.observations[i][3]);
 		problem.AddResidualBlock(cost_function_right,
 			NULL,
 			model.cameras[1].data(),
 			model.terrain[i].data()
 			);
     }
+
+    problem.SetParameterBlockConstant(model.cameras[0].data());
 
     ceres::Solver::Options options;
     options.linear_solver_type = ceres::DENSE_SCHUR;
