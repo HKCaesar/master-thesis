@@ -25,7 +25,7 @@ def make_features_table(root, subdirs, outlier_threshold, fraction_limit):
         coverage = spatial_coverage(matches, shape)
 
         # Indice where outlier fraction > fraction_limit
-        frac_lims = np.append(frac_lims, np.flatnonzero(np.cumsum(np.abs(angles) > outlier_threshold) / angles.size > fraction_limit)[0])
+        frac_lims = np.append(frac_lims, np.flatnonzero(np.cumsum(np.abs(angles) > outlier_threshold) / np.arange(1, angles.size+1) > fraction_limit)[0])
         # Spatial coverage at that indice
         first_coverages = np.append(first_coverages, coverage[frac_lims[-1]])
 
