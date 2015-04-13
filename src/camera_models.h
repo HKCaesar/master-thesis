@@ -52,6 +52,8 @@ struct Model0ReprojectionError {
 		T x = Q(0, 0) / Q(2, 0);
 		T y = Q(1, 0) / Q(2, 0);
 
+        // TODO convert features x,y to millimiters (now in pixels from opencv)
+
 		// Apply focal length and principal point
 		residuals[0] = internal[0] * x + internal[1] - T(observed_x);
 		residuals[1] = internal[0] * y + internal[2] - T(observed_y);

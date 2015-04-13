@@ -21,6 +21,10 @@ struct DataSetPair {
     DataSetPair(string left, string right) {
         image_left = cv::imread(left);
         image_right = cv::imread(right);
+
+        if (image_left.data == NULL || image_right.data == NULL) {
+            std::cerr << "ERROR: cannot load DataSetPair images\n";
+        }
     }
 
     cv::Mat image_left;
@@ -59,10 +63,34 @@ vector<T> reorder(const vector<T>& input, vector<size_t> indexes) {
     return output;
 }
 
+void write_matches_image(string path, cv::Mat image1, cv::Mat image2,
+                      vector<cv::KeyPoint> keypoint1, vector<cv::KeyPoint> keypoint2,
+                      vector<cv::DMatch> matches,
+                      size_t nb_of_features) {
+    // Maximum wrap
+    if (nb_of_features > matches.size()) {
+        nb_of_features = matches.size();
+    }
+
+    // Keep nb_of_features elements
+    vector<cv::DMatch> good_matches(matches.begin(), matches.begin() + nb_of_features);
+
+    // Draw
+    cv::Mat img;
+    cv::drawMatches(image1, keypoint1, image2, keypoint2,
+            good_matches, img, cv::Scalar::all(-1), cv::Scalar::all(-1),
+            vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+
+    cv::imwrite(path, img);
+}
+
+// TODO add support for computing any feature on a zoom out input
+// see results for features 5% outlier level in report
+//
 // Represents image features of a dataset (keypoints and matches)
 // As well as pairwise relationship (relative image positions, existence of overlap)
 struct ImageFeatures {
-    ImageFeatures(const DataSetPair& ds) : data_set(ds) {
+    ImageFeatures(const DataSetPair& ds, const size_t maximum_number_of_matches) : data_set(ds) {
         cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create();
         cv::Ptr<cv::FeatureDetector> detector = surf;
         cv::Ptr<cv::DescriptorExtractor> descriptor = surf;
@@ -96,8 +124,10 @@ struct ImageFeatures {
         vector<size_t> order = argsort(matches);
         matches = reorder(matches, order);
 
+        write_matches_image("matches.jpg", data_set.image_left, data_set.image_right, keypoint1, keypoint2, matches, maximum_number_of_matches);
+
         // Store into simple ordered by distance vector of observations
-        for (size_t i = 0; i < matches.size(); i++) {
+        for (size_t i = 0; i < matches.size() && i < maximum_number_of_matches; i++) {
             // query is kp1, train is kp2 (see declaration of matcher.match
             observations.push_back(array<double, 4>{
                     keypoint1[matches[i].queryIdx].pt.x,
@@ -121,16 +151,15 @@ struct ImageFeatures {
 
 // struct Model0 : public Model {
 struct Model0 {
-    Model0(const ImageFeatures& f, array<double, 6> left_cam, array<double, 6> right_cam) : features(f) {
-        // Initialize from parent
+    Model0(const ImageFeatures& f, array<const double, 3> internal, array<double, 6> left_cam, array<double, 6> right_cam) :
+        features(f),
+        internal(internal) {
+        // Initialize from parent model
         // (for now hard coded left-right images)
 
-        // Internals from calibration report
-        internal = {48.3355, 0.0093, -0.0276};
-
         // Initialize cameras side by side
-        cameras[0] = left_cam;
-        cameras[1] = right_cam;
+        cameras.push_back(left_cam);
+        cameras.push_back(right_cam);
 
         terrain.resize(features.observations.size());
 
@@ -140,8 +169,8 @@ struct Model0 {
             double dx_left, dy_left;
             double dx_right, dy_right;
             double elevation = 0.0;
-            image_to_world(&internal[0], &cameras[0][0], &features.observations[i][0], &elevation, &dx_left, &dy_left);
-            image_to_world(&internal[0], &cameras[1][0], &features.observations[i][2], &elevation, &dx_right, &dy_right);
+            image_to_world(internal.data(), cameras[0].data(), &features.observations[i][0], &elevation, &dx_left, &dy_left);
+            image_to_world(internal.data(), cameras[1].data(), &features.observations[i][2], &elevation, &dx_right, &dy_right);
 
             // Take average of both projections
             terrain[i] = {(dx_left + dx_right)/2.0, (dy_left + dy_right)/2.0};
@@ -151,12 +180,19 @@ struct Model0 {
     const ImageFeatures& features;
 
     // 3 dof internals: {f, ppx, ppy}
-    array<double, 3> internal;
+    array<const double, 3> internal;
 
     // Parameters
     vector< array<double, 6> > cameras; // 6 dof cameras
     vector< array<double, 2> > terrain; // 2 dof ground points on flat terrain
 };
+
+template <int N>
+void print_array(array<double, N> arr) {
+    for (size_t i = 0; i < N; i++) {
+        std::cout << arr[i] << " ";
+    }
+}
 
 int main(int argc, char* argv[]) {
     if (argc < 3) {
@@ -167,19 +203,61 @@ int main(int argc, char* argv[]) {
     string data = std::string(argv[1]);
     string results_dir = std::string(argv[2]) + "/features_analysis";
 
+    // Test problem for model0
+    // This problem definition code could be moved to a 'project file' or equivalent
+
     // Load images
-    // data set definition file / code
     // defines filenames, pairwise order
-    DataSetPair data_set(data + "/alinta-stockpile/DSC_5522.jpg", data + "/alinta-stockpile/DSC_5522.jpg");
+    std::cout << "Loading images..." << std::endl;
+    DataSetPair data_set(data + "/alinta-stockpile/DSC_5522.JPG", data + "/alinta-stockpile/DSC_5521.JPG");
 
-    // Match features
-    ImageFeatures features(data_set);
-    // params: algo
+    // Match features and obtain observations
+    std::cout << "Matching features..." << std::endl;
+    ImageFeatures features(data_set, 10);
 
-    Model0 model(features, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0});
-    // Create model 0
-    // params: data set, features, optimization params
+    exit(0);
 
-    // Setup solver model
-    // solve
+    // Create model
+    std::cout << "Setting up model..." << std::endl;
+    Model0 model(features, {48.3355e-3, 0.0093e-3, -0.0276e-3}, {0, 0, 800, 0, 0, 0}, {0, 0, 800, 0, 0, 0});
+
+    // Setup solver
+    std::cout << "Solving..." << std::endl;
+    ceres::Problem problem;
+    for (size_t i = 0; i < model.features.observations.size(); i++) {
+        // Residual for left cam
+		ceres::CostFunction* cost_function_left =
+            Model0ReprojectionError::create(model.internal, model.features.observations[i][0], model.features.observations[i][1]);
+		problem.AddResidualBlock(cost_function_left,
+			NULL,
+			model.cameras[0].data(),
+			model.terrain[i].data()
+			);
+
+        // Residual for right cam
+		ceres::CostFunction* cost_function_right =
+            Model0ReprojectionError::create(model.internal, model.features.observations[i][2], model.features.observations[i][3]);
+		problem.AddResidualBlock(cost_function_right,
+			NULL,
+			model.cameras[1].data(),
+			model.terrain[i].data()
+			);
+    }
+
+    ceres::Solver::Options options;
+    options.linear_solver_type = ceres::DENSE_SCHUR;
+    options.minimizer_progress_to_stdout = true;
+    options.max_linear_solver_iterations = 3;
+    options.max_num_iterations = 30;
+    options.num_threads = 1;
+
+    ceres::Solver::Summary summary;
+    ceres::Solve(options, &problem, &summary);
+    std::cout << summary.FullReport() << "\n";
+
+    std::cout << "==================" << std::endl;
+    print_array<6>(model.cameras[0]);
+    std::cout << std::endl;
+    print_array<6>(model.cameras[1]);
+    std::cout << std::endl;
 }
