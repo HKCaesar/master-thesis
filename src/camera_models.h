@@ -23,20 +23,20 @@ Eigen::Matrix<T, 3, 3, Eigen::ColMajor> rotation_matrix(const T* external) {
 // 2D ground points (z=0)
 // Fixed internals and no distortion
 struct Model0ReprojectionError {
-    const array<const double, 3> internals;
+    const array<const double, 3> internal;
 	const double observed_x;
 	const double observed_y;
 
 	// Factory to hide the construction of the CostFunction object
-	static ceres::CostFunction* create(const array<const double, 3> internals, const double observed_x, const double observed_y) {
+	static ceres::CostFunction* create(const array<const double, 3> internal, const double observed_x, const double observed_y) {
 		// template parameters indicate the numbers of:
         // residuals, params in block 1, 2, 3...
 		return (new ceres::AutoDiffCostFunction<Model0ReprojectionError, 2, 6, 2>(
-			new Model0ReprojectionError(internals, observed_x, observed_y)));
+			new Model0ReprojectionError(internal, observed_x, observed_y)));
 	}
 
-	Model0ReprojectionError(double observed_x, double observed_y)
-		: internals(internals), observed_x(observed_x), observed_y(observed_y) {}
+	Model0ReprojectionError(const array<const double, 3> internal, double observed_x, double observed_y)
+		: internal(internal), observed_x(observed_x), observed_y(observed_y) {}
 
 	template <typename T>
 	bool operator()(const T* const external, const T* const point, T* residuals) const {
@@ -60,6 +60,8 @@ struct Model0ReprojectionError {
 	}
 };
 
+// Downproject to fixed elevation
+// internal size is 3: {f, ppx, ppy}
 template <typename T>
 void image_to_world(const T* const internal,
                     const T* const external,
@@ -95,8 +97,8 @@ void image_to_world(const T* const internal,
         T(0), T(0), elevation[0],
         T(0), T(0), T(1);
 
-    P << internal[0], T(0), internal[2], T(0),
-        T(0), internal[1], internal[3], T(0),
+    P << internal[0], T(0), internal[1], T(0),
+        T(0), internal[0], internal[2], T(0),
         T(0), T(0), T(1), T(0);
 
     Eigen::Matrix<T, 3, 3, Eigen::ColMajor> A = P * R1* T1*B;

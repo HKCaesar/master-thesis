@@ -15,6 +15,8 @@ using std::shared_ptr;
 #include <opencv2/opencv.hpp>
 #include "opencv2/xfeatures2d.hpp"
 
+#include "camera_models.h"
+
 struct DataSetPair {
     DataSetPair(string left, string right) {
         image_left = cv::imread(left);
@@ -124,20 +126,32 @@ struct Model0 {
         // (for now hard coded left-right images)
 
         // Internals from calibration report
-        internals = {48.3355, 0.0093, -0.0276};
+        internal = {48.3355, 0.0093, -0.0276};
 
         // Initialize cameras side by side
         cameras[0] = left_cam;
         cameras[1] = right_cam;
 
-        // Initialize zero height terrain by inverse projection of ground features
-        // Down project and take average of two ground points?
+        terrain.resize(features.observations.size());
+
+        // For each observation
+        for (size_t i = 0; i < features.observations.size(); i++) {
+            // Down project to z=0 to initialize terrain
+            double dx_left, dy_left;
+            double dx_right, dy_right;
+            double elevation = 0.0;
+            image_to_world(&internal[0], &cameras[0][0], &features.observations[i][0], &elevation, &dx_left, &dy_left);
+            image_to_world(&internal[0], &cameras[1][0], &features.observations[i][2], &elevation, &dx_right, &dy_right);
+
+            // Take average of both projections
+            terrain[i] = {(dx_left + dx_right)/2.0, (dy_left + dy_right)/2.0};
+        }
     }
 
     const ImageFeatures& features;
 
     // 3 dof internals: {f, ppx, ppy}
-    array<double, 3> internals;
+    array<double, 3> internal;
 
     // Parameters
     vector< array<double, 6> > cameras; // 6 dof cameras
