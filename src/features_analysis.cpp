@@ -162,17 +162,19 @@ void test_image_pair(string path, string path1, string path2) {
 
     // Perform analysis with different configs
     cv::Ptr<cv::ORB> orb = cv::ORB::create();
-    cv::Ptr<cv::MSER> mser = cv::MSER::create();
+    // cv::Ptr<cv::MSER> mser = cv::MSER::create();
     cv::Ptr<cv::BRISK> brisk = cv::BRISK::create();
     cv::Ptr<cv::KAZE> kaze = cv::KAZE::create();
     cv::Ptr<cv::AKAZE> akaze = cv::AKAZE::create();
     cv::Ptr<cv::xfeatures2d::SIFT> sift = cv::xfeatures2d::SIFT::create();
-    cv::Ptr<cv::xfeatures2d::SURF> surf= cv::xfeatures2d::SURF::create();
+    cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create();
+    cv::Ptr<cv::xfeatures2d::SURF> surf_o6 = cv::xfeatures2d::SURF::create(400, 6);
+    cv::Ptr<cv::xfeatures2d::FREAK> freak = cv::xfeatures2d::FREAK::create();
 
     features_analysis(path + "/ORB", image1, image2, orb, orb);
-    features_analysis(path + "/MSER-ORB", image1, image2, mser, orb);
-    features_analysis(path + "/MSER-SIFT", image1, image2, mser, sift);
-    features_analysis(path + "/MSER-SURF", image1, image2, mser, surf);
+    // features_analysis(path + "/MSER-ORB", image1, image2, mser, orb);
+    // features_analysis(path + "/MSER-SIFT", image1, image2, mser, sift);
+    // features_analysis(path + "/MSER-SURF", image1, image2, mser, surf);
     features_analysis(path + "/BRISK", image1, image2, brisk, brisk);
     features_analysis(path + "/BRISK-ORB", image1, image2, brisk, orb);
     features_analysis(path + "/BRISK-SIFT", image1, image2, brisk, sift);
@@ -182,6 +184,8 @@ void test_image_pair(string path, string path1, string path2) {
     features_analysis(path + "/AKAZE", image1, image2, akaze, akaze);
     features_analysis(path + "/SIFT", image1, image2, sift, sift);
     features_analysis(path + "/SURF", image1, image2, surf, surf);
+    features_analysis(path + "/SURF-o6", image1, image2, surf_o6, surf_o6);
+    features_analysis(path + "/BRISK-FREAK", image1, image2, brisk, freak);
 }
 
 int main(int argc, char* argv[]) {
@@ -213,7 +217,15 @@ int main(int argc, char* argv[]) {
             data + "/features-areas/industrial1.jpg",
             data + "/features-areas/industrial2.jpg");
 
+    test_image_pair(results_dir + "/entire-image",
+            data + "/alinta-stockpile/DSC_5521.JPG",
+            data + "/alinta-stockpile/DSC_5522.JPG");
+
     test_image_pair(results_dir + "/entire-image-quarter",
             data + "/alinta-stockpile-quarter/DSC_5521.JPG",
             data + "/alinta-stockpile-quarter/DSC_5522.JPG");
+
+    test_image_pair(results_dir + "/entire-image-eighth",
+            data + "/alinta-stockpile-eighth/DSC_5521.JPG",
+            data + "/alinta-stockpile-eighth/DSC_5522.JPG");
 }
