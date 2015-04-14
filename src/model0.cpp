@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <array>
 #include <tuple>
@@ -12,8 +13,13 @@ using std::array;
 using std::string;
 using std::shared_ptr;
 
+#include <cereal/archives/json.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/array.hpp>
+
 #include <opencv2/opencv.hpp>
 #include "opencv2/xfeatures2d.hpp"
+
 
 #include "camera_models.h"
 
@@ -178,6 +184,11 @@ struct Model0 {
         }
     }
 
+    template <class Archive>
+    void serialize(Archive& ar) {
+        ar(cereal::make_nvp("cameras", cameras), cereal::make_nvp("terrain", terrain));
+    }
+
     const ImageFeatures& features;
 
     // 3 dof internals: {f, ppx, ppy}
@@ -265,4 +276,9 @@ int main(int argc, char* argv[]) {
     std::cout << std::endl;
     print_array<6>(model.cameras[1]);
     std::cout << std::endl;
+
+    // Serialize model with cereal
+    std::ofstream ofs("model0.json");
+    cereal::JSONOutputArchive output(ofs);
+    output(model);
 }

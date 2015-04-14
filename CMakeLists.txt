@@ -7,6 +7,7 @@ find_package(Threads)
 find_package(Ceres REQUIRED PATHS "ceres")
 
 include_directories(${CERES_INCLUDE_DIRS})
+include_directories("../cereal-1.1.1/include")
 
 # Features analysis
 add_executable(features_analysis
