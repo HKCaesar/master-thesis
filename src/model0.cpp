@@ -20,19 +20,31 @@ using std::shared_ptr;
 #include <opencv2/opencv.hpp>
 #include "opencv2/xfeatures2d.hpp"
 
-
 #include "camera_models.h"
 
 struct DataSetPair {
-    DataSetPair(string left, string right) {
-        image_left = cv::imread(left);
-        image_right = cv::imread(right);
+    DataSetPair(string l, string r) : left(l), right(r) {
+    }
+
+    void load(string data_root) {
+        image_left = cv::imread(data_root + "/" + left);
+        image_right = cv::imread(data_root + "/" + right);
 
         if (image_left.data == NULL || image_right.data == NULL) {
             std::cerr << "ERROR: cannot load DataSetPair images\n";
         }
     }
 
+    template <class Archive>
+    void serialize(Archive& ar) {
+        ar(CEREAL_NVP(left), CEREAL_NVP(right));
+    }
+
+    const std::string left;
+    const std::string right;
+
+    // TODO load images on demand
+    // or manually, ex: if (!isloaded) data_set.load() before computing features
     cv::Mat image_left;
     cv::Mat image_right;
 };
@@ -145,6 +157,11 @@ struct ImageFeatures {
         }
     }
 
+    template <class Archive>
+    void serialize(Archive& ar) {
+        ar(cereal::make_nvp("observations", observations));
+    }
+
     vector<cv::KeyPoint> keypoint1;
     vector<cv::KeyPoint> keypoint2;
     cv::Mat descriptor1;
@@ -199,10 +216,14 @@ struct Model0 {
     vector< array<double, 2> > terrain; // 2 dof ground points on flat terrain
 };
 
-template <int N>
-void print_array(array<double, N> arr) {
-    for (size_t i = 0; i < N; i++) {
-        std::cout << arr[i] << " ";
+// Overload std::array for JSON to use []
+namespace cereal {
+    template <std::size_t N>
+    void save(cereal::JSONOutputArchive& archive, std::array<double, N> const& list) {
+        archive(cereal::make_size_tag(static_cast<cereal::size_type>(list.size())));
+        for (auto && v : list) {
+            archive(v);
+        }
     }
 }
 
@@ -214,7 +235,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    string data = std::string(argv[1]);
+    string data_root = std::string(argv[1]);
     string results_dir = std::string(argv[2]) + "/features_analysis";
 
     // Test problem for model0
@@ -223,7 +244,8 @@ int main(int argc, char* argv[]) {
     // Load images
     // defines filenames, pairwise order
     std::cout << "Loading images..." << std::endl;
-    DataSetPair data_set(data + "/alinta-stockpile/DSC_5522.JPG", data + "/alinta-stockpile/DSC_5521.JPG");
+    DataSetPair data_set("alinta-stockpile/DSC_5522.JPG", "alinta-stockpile/DSC_5521.JPG");
+    data_set.load(data_root);
 
     // Match features and obtain observations
     std::cout << "Matching features..." << std::endl;
@@ -272,13 +294,16 @@ int main(int argc, char* argv[]) {
     std::cout << summary.FullReport() << "\n";
 
     std::cout << "==================" << std::endl;
-    print_array<6>(model.cameras[0]);
-    std::cout << std::endl;
-    print_array<6>(model.cameras[1]);
-    std::cout << std::endl;
+    cereal::JSONOutputArchive sum(std::cout);
+    sum(model.cameras[0]);
+    sum(model.cameras[1]);
 
     // Serialize model with cereal
     std::ofstream ofs("model0.json");
     cereal::JSONOutputArchive output(ofs);
-    output(model);
+    output(
+        cereal::make_nvp("data", data_set),
+        cereal::make_nvp("features", features),
+        cereal::make_nvp("model", model)
+    );
 }
