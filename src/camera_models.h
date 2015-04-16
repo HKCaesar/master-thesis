@@ -3,6 +3,14 @@
 
 #include "ceres/ceres.h"
 #include <iostream>
+#include <array>
+
+using std::array;
+
+// This is just a test for setting up cython
+void vector_print(double list[3]) {
+    std::cout << list[0] << " " << list[1] << " " << list[2] << std::endl;
+}
 
 template <typename T>
 Eigen::Matrix<T, 3, 3, Eigen::ColMajor> rotation_matrix(const T* external) {
