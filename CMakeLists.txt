@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(MasterThesis)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
 
 find_package(OpenCV REQUIRED)
 find_package(Threads)
@@ -39,6 +39,10 @@ add_library(pymodel0 SHARED
 target_link_libraries(pymodel0
     ${CERES_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
+)
+
+set_target_properties(pymodel0 PROPERTIES COMPILE_FLAGS
+    "-fwrapv -Wstrict-prototypes -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -fPIC -Wno-unused-function"
 )
 
 # Run cython compiler before compiling the module
