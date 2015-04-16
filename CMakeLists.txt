@@ -41,13 +41,17 @@ target_link_libraries(pymodel0
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
-set_target_properties(pymodel0 PROPERTIES COMPILE_FLAGS
-    "-fwrapv -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -fPIC -Wno-unused-function"
-)
-
 # Run cython compiler before compiling the module
+# Note, the DEPENDS argument here will only work with makefiles
+# so other build systems will need to run cython manually
 add_custom_command(OUTPUT cython_model0.cpp
     COMMAND cython --cplus ../cython/pymodel0.pyx -o cython_model0.cpp
+    DEPENDS "${CMAKE_SOURCE_DIR}/cython/pymodel0.pyx"
+    COMMENT "Compiling pymodel0.pyx"
+)
+
+set_target_properties(pymodel0 PROPERTIES COMPILE_FLAGS
+    "-fwrapv -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -fPIC -Wno-unused-function"
 )
 
 # Rename library file to follow python convention
