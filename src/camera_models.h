@@ -27,6 +27,31 @@ Eigen::Matrix<T, 3, 3, Eigen::ColMajor> rotation_matrix(const T* external) {
 	return Pitch * Roll * Yaw;
 }
 
+template <typename T>
+bool model0_projection(
+        const double* internal,
+        const T* const external,
+        const T* const point,
+        T* residuals) {
+
+    Eigen::Matrix<T, 3, 3, Eigen::ColMajor> R = rotation_matrix(external);
+
+    // Translate and rotate to camera frame
+    Eigen::Matrix<T, 3, 1, Eigen::ColMajor> Q;
+    Q << point[0] - external[0], point[1] - external[1], external[2];
+    Q = R*Q;
+
+    // Normalized (pin-hole) coordinates
+    T x = Q(0, 0) / Q(2, 0);
+    T y = Q(1, 0) / Q(2, 0);
+
+    // Apply focal length and principal point
+    residuals[0] = internal[0] * x + internal[1];
+    residuals[1] = internal[0] * y + internal[2];
+
+    return true;
+}
+
 // Most basic reprojection error
 // 2D ground points (z=0)
 // Fixed internals and no distortion
@@ -49,23 +74,12 @@ struct Model0ReprojectionError {
 	template <typename T>
 	bool operator()(const T* const external, const T* const point, T* residuals) const {
 
-        Eigen::Matrix<T, 3, 3, Eigen::ColMajor> R = rotation_matrix(external);
-
-		// Translate and rotate to camera frame
-		Eigen::Matrix<T, 3, 1, Eigen::ColMajor> Q;
-		Q << point[0] - external[0], point[1] - external[1], external[2];
-		Q = R*Q;
-
-		// Normalized (pin-hole) coordinates
-		T x = Q(0, 0) / Q(2, 0);
-		T y = Q(1, 0) / Q(2, 0);
-
-		// Apply focal length and principal point
-		residuals[0] = internal[0] * x + internal[1] - T(observed_x);
-		residuals[1] = internal[0] * y + internal[2] - T(observed_y);
-
-		return true;
-	}
+        // Subtract observed coordinates
+        bool r = model0_projection<T>(internal.data(), external, point, residuals);
+        residuals[0] -= T(observed_x);
+        residuals[1] -= T(observed_y);
+        return r;
+    }
 };
 
 // Downproject to fixed elevation

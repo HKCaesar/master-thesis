@@ -42,7 +42,7 @@ target_link_libraries(pymodel0
 )
 
 set_target_properties(pymodel0 PROPERTIES COMPILE_FLAGS
-    "-fwrapv -Wstrict-prototypes -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -fPIC -Wno-unused-function"
+    "-fwrapv -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -fPIC -Wno-unused-function"
 )
 
 # Run cython compiler before compiling the module
