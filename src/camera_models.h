@@ -27,12 +27,6 @@ Eigen::Matrix<T, 3, 3, Eigen::ColMajor> rotation_matrix(const T* external) {
 	return Pitch * Roll * Yaw;
 }
 
-bool model0_projection_double(double* internal, double* external, double* point, double* residuals) {
-    residuals[0] = 42;
-    residuals[1] = 43;
-    return true;
-}
-
 template <typename T>
 bool model0_projection(
         const double* internal,
@@ -56,6 +50,10 @@ bool model0_projection(
     residuals[1] = internal[0] * y + internal[2];
 
     return true;
+}
+
+bool model0_projection_double(const double* internal, const double* external, const double* point, double* residuals) {
+    return model0_projection<double>(internal, external, point, residuals);
 }
 
 // Most basic reprojection error
