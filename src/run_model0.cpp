@@ -21,34 +21,7 @@ using std::shared_ptr;
 #include "opencv2/xfeatures2d.hpp"
 
 #include "camera_models.h"
-
-struct DataSetPair {
-    DataSetPair(string l, string r) : left(l), right(r) {
-    }
-
-    void load(string data_root) {
-        image_left = cv::imread(data_root + "/" + left);
-        image_right = cv::imread(data_root + "/" + right);
-
-        if (image_left.data == NULL || image_right.data == NULL) {
-            std::cerr << "ERROR: cannot load DataSetPair images\n";
-        }
-    }
-
-    template <class Archive>
-    void serialize(Archive& ar) {
-        ar(CEREAL_NVP(left),
-           CEREAL_NVP(right));
-    }
-
-    const std::string left;
-    const std::string right;
-
-    // TODO load images on demand
-    // or manually, ex: if (!isloaded) data_set.load() before computing features
-    cv::Mat image_left;
-    cv::Mat image_right;
-};
+#include "data_set.h"
 
 // Returns the list of indexes that sort the match array by distance
 vector<size_t> argsort(vector<cv::DMatch> matches) {
@@ -109,17 +82,17 @@ void write_matches_image(string path, cv::Mat image1, cv::Mat image2,
 // Represents image features of a dataset (keypoints and matches)
 // As well as pairwise relationship (relative image positions, existence of overlap)
 struct ImageFeatures {
-    ImageFeatures(const DataSetPair& ds, const size_t maximum_number_of_matches) : data_set(ds) {
+    ImageFeatures(const DataSet& ds, const size_t maximum_number_of_matches) : data_set(ds) {
         cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create();
         cv::Ptr<cv::xfeatures2d::SIFT> sift = cv::xfeatures2d::SIFT::create();
         cv::Ptr<cv::FeatureDetector> detector = sift;
         cv::Ptr<cv::DescriptorExtractor> descriptor = sift;
 
         // Detect and compute descriptors
-        detector->detect(data_set.image_left, keypoint1);
-        detector->detect(data_set.image_right, keypoint2);
-        descriptor->compute(data_set.image_left, keypoint1, descriptor1);
-        descriptor->compute(data_set.image_right, keypoint2, descriptor2);
+        detector->detect(data_set.images[0], keypoint1);
+        detector->detect(data_set.images[1], keypoint2);
+        descriptor->compute(data_set.images[0], keypoint1, descriptor1);
+        descriptor->compute(data_set.images[1], keypoint2, descriptor2);
 
         if (descriptor1.empty() || descriptor2.empty()) {
             std::cerr << "Empty descriptor!" << std::endl;
@@ -144,7 +117,7 @@ struct ImageFeatures {
         vector<size_t> order = argsort(matches);
         matches = reorder(matches, order);
 
-        write_matches_image("matches.jpg", data_set.image_left, data_set.image_right, keypoint1, keypoint2, matches, maximum_number_of_matches);
+        write_matches_image("matches.jpg", data_set.images[0], data_set.images[1], keypoint1, keypoint2, matches, maximum_number_of_matches);
 
         // Store into simple ordered by distance vector of observations
         for (size_t i = 0; i < matches.size() && i < maximum_number_of_matches; i++) {
@@ -171,7 +144,7 @@ struct ImageFeatures {
 
     vector< array<double, 4> > observations;
 
-    const DataSetPair& data_set;
+    const DataSet& data_set;
 };
 
 // struct Model0 : public Model {
@@ -250,7 +223,9 @@ int main(int argc, char* argv[]) {
     // Load images
     // defines filenames, pairwise order
     std::cout << "Loading images..." << std::endl;
-    DataSetPair data_set("alinta-stockpile/DSC_5522.JPG", "alinta-stockpile/DSC_5521.JPG");
+    DataSet data_set;
+    data_set.filenames.push_back(string("alinta-stockpile/DSC_5522.JPG"));
+    data_set.filenames.push_back(string("alinta-stockpile/DSC_5521.JPG"));
     data_set.load(data_root);
 
     // Match features and obtain observations
