@@ -60,19 +60,19 @@ bool model0_projection_double(const double* internal, const double* external, co
 // 2D ground points (z=0)
 // Fixed internals and no distortion
 struct Model0ReprojectionError {
-    const array<const double, 3> internal;
+    const array<double, 3> internal;
 	const double observed_x;
 	const double observed_y;
 
 	// Factory to hide the construction of the CostFunction object
-	static ceres::CostFunction* create(const array<const double, 3> internal, const double observed_x, const double observed_y) {
+	static ceres::CostFunction* create(const array<double, 3> internal, const double observed_x, const double observed_y) {
 		// template parameters indicate the numbers of:
         // residuals, params in block 1, 2, 3...
 		return (new ceres::AutoDiffCostFunction<Model0ReprojectionError, 2, 6, 2>(
 			new Model0ReprojectionError(internal, observed_x, observed_y)));
 	}
 
-	Model0ReprojectionError(const array<const double, 3> internal, double observed_x, double observed_y)
+	Model0ReprojectionError(const array<double, 3> internal, double observed_x, double observed_y)
 		: internal(internal), observed_x(observed_x), observed_y(observed_y) {}
 
 	template <typename T>
@@ -136,5 +136,14 @@ void image_to_world(const T* const internal,
     *dx = sol(0, 0) / sol(2, 0);
 	*dy = sol(1, 0) / sol(2, 0);
 }
+
+void model0_image_to_world_double(const double* const internal,
+                                  const double* const external,
+                                  const double* pix,
+                                  const double* elevation,
+                                  double* dx, double* dy) {
+    image_to_world<double>(internal, external, pix, elevation, dx, dy);
+}
+
 
 #endif

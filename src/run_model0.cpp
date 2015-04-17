@@ -37,7 +37,8 @@ struct DataSetPair {
 
     template <class Archive>
     void serialize(Archive& ar) {
-        ar(CEREAL_NVP(left), CEREAL_NVP(right));
+        ar(CEREAL_NVP(left),
+           CEREAL_NVP(right));
     }
 
     const std::string left;
@@ -175,9 +176,10 @@ struct ImageFeatures {
 
 // struct Model0 : public Model {
 struct Model0 {
-    Model0(const ImageFeatures& f, array<const double, 3> internal, array<double, 6> left_cam, array<double, 6> right_cam) :
-        features(f),
-        internal(internal) {
+    Model0(const ImageFeatures& f, const array<double, 3>& internal, double ps, array<double, 6> left_cam, array<double, 6> right_cam) :
+            features(f),
+            internal(internal),
+            pixel_size(ps) {
         // Initialize from parent model
         // (for now hard coded left-right images)
 
@@ -203,13 +205,17 @@ struct Model0 {
 
     template <class Archive>
     void serialize(Archive& ar) {
-        ar(cereal::make_nvp("cameras", cameras), cereal::make_nvp("terrain", terrain));
+        ar(cereal::make_nvp("cameras", cameras),
+           cereal::make_nvp("terrain", terrain),
+           cereal::make_nvp("internal", internal),
+           cereal::make_nvp("pixel_size", pixel_size));
     }
 
     const ImageFeatures& features;
 
     // 3 dof internals: {f, ppx, ppy}
-    array<const double, 3> internal;
+    const array<double, 3> internal;
+    const double pixel_size;
 
     // Parameters
     vector< array<double, 6> > cameras; // 6 dof cameras
@@ -253,9 +259,8 @@ int main(int argc, char* argv[]) {
 
     // Create model
     std::cout << "Setting up model..." << std::endl;
-    Model0 model(features, {48.3355e-3, 0.0093e-3, -0.0276e-3}, {0, 0, 269, 0, 0, 0}, {0, 0, 269, 0, 0, 0});
-
     const double pixel_size = 0.0085e-3;
+    Model0 model(features, {48.3355e-3, 0.0093e-3, -0.0276e-3}, pixel_size, {0, 0, 269, 0, 0, 0}, {0, 0, 269, 0, 0, 0});
 
     // Setup solver
     std::cout << "Solving..." << std::endl;
