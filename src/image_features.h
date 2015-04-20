@@ -16,16 +16,17 @@
 // Represents image features of a dataset (keypoints and matches)
 // As well as pairwise relationship (relative image positions, existence of overlap)
 struct ImageFeatures {
-    ImageFeatures(std::shared_ptr<DataSet> ds, const size_t maximum_number_of_matches);
+    size_t maximum_number_of_matches;
+    std::vector<std::array<double, 4>> observations;
+    std::shared_ptr<DataSet> data_set;
+
+    void compute();
 
     template <class Archive>
     void serialize(Archive& ar) {
         ar(cereal::make_nvp("observations", observations),
            cereal::make_nvp("data_set", data_set));
     }
-
-    std::vector<std::array<double, 4>> observations;
-    std::shared_ptr<DataSet> data_set;
 
 private:
     std::vector<cv::KeyPoint> keypoint1;

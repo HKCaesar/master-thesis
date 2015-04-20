@@ -59,7 +59,7 @@ void write_matches_image(string path, cv::Mat image1, cv::Mat image2,
     cv::imwrite(path, img);
 }
 
-ImageFeatures::ImageFeatures(std::shared_ptr<DataSet> ds, const size_t maximum_number_of_matches) : data_set(ds) {
+void ImageFeatures::compute() {
     cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create();
     cv::Ptr<cv::xfeatures2d::SIFT> sift = cv::xfeatures2d::SIFT::create();
     cv::Ptr<cv::FeatureDetector> detector = sift;

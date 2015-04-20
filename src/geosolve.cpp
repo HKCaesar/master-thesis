@@ -71,7 +71,10 @@ int main(int argc, char* argv[]) {
 
     // Match features and obtain observations
     std::cout << "Matching features..." << std::endl;
-    std::shared_ptr<ImageFeatures> features(new ImageFeatures(data_set, 10));
+    std::shared_ptr<ImageFeatures> features(new ImageFeatures());
+    features->data_set = data_set;
+    features->maximum_number_of_matches = 10;
+    features->compute();
 
     // Create model
     std::cout << "Setting up model..." << std::endl;
