@@ -20,12 +20,13 @@ Model0::Model0(const ImageFeatures& f, const array<double, 3>& internal, double 
         double dx_left, dy_left;
         double dx_right, dy_right;
         double elevation = 0.0;
-        image_to_world(internal.data(), init.cameras[0].data(), &features.observations[i][0], &elevation, &dx_left, &dy_left);
-        image_to_world(internal.data(), init.cameras[1].data(), &features.observations[i][2], &elevation, &dx_right, &dy_right);
+        double pix_x = pixel_size*features.observations[i][0];
+        double pix_y = pixel_size*features.observations[i][1];
+        image_to_world(internal.data(), init.cameras[0].data(), &pix_x, &elevation, &dx_left, &dy_left);
+        image_to_world(internal.data(), init.cameras[1].data(), &pix_y, &elevation, &dx_right, &dy_right);
 
         // Take average of both projections
         init.terrain[i] = {(dx_left + dx_right)/2.0, (dy_left + dy_right)/2.0};
-        std::cout << (dx_left + dx_right)/2.0 << " " << (dy_left + dy_right)/2.0 << std::endl;
     }
 
     solutions.push_back(init);
