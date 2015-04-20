@@ -20,6 +20,7 @@ target_link_libraries(features_analysis ${OpenCV_LIBS})
 # Model0
 add_executable(model0
     src/run_model0.cpp
+    src/image_features.cpp
 )
 target_link_libraries(model0
     ${OpenCV_LIBS}

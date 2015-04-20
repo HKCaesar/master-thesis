@@ -7,7 +7,7 @@
 #include <opencv2/opencv.hpp>
 
 struct DataSet {
-    void load(string data_root) {
+    void load(std::string data_root) {
         for (auto& name : filenames) {
             cv::Mat im = cv::imread(data_root + "/" + name);
             if (im.data == NULL) {
