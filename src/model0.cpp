@@ -1,3 +1,4 @@
+#include <memory>
 #include "model0.h"
 
 Model0::Model0(const ImageFeatures& f, const array<double, 3>& internal, double ps, array<double, 6> left_cam, array<double, 6> right_cam) :
@@ -31,6 +32,18 @@ Model0::Model0(const ImageFeatures& f, const array<double, 3>& internal, double 
 
     solutions.push_back(init);
 }
+
+class LogSolutionCallback : public ceres::IterationCallback {
+    Model0& model;
+    const Solution& working_solution;
+public:
+    LogSolutionCallback(Model0& m, const Solution& w) : model(m), working_solution(w) {}
+    virtual ~LogSolutionCallback() {}
+    virtual ceres::CallbackReturnType operator()(const ceres::IterationSummary&) {
+        model.solutions.push_back(working_solution);
+        return ceres::SOLVER_CONTINUE;
+    }
+};
 
 void Model0::solve() {
     // The working solution is the one holding ceres' parameter blocks
@@ -66,6 +79,11 @@ void Model0::solve() {
     options.max_linear_solver_iterations = 3;
     options.max_num_iterations = 30;
     options.num_threads = 1;
+
+    // Enable logging of solution at every step
+    options.update_state_every_iteration = true;
+    std::shared_ptr<LogSolutionCallback> solution_logger(new LogSolutionCallback(*this, working_solution));
+    options.callbacks.push_back(solution_logger.get());
 
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
