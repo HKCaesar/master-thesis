@@ -3,7 +3,7 @@ cimport numpy as np
 from libcpp cimport bool
 import cython
 
-cdef extern from "../src/camera_models.h":
+cdef extern from "../src/model0.h":
     bool model0_projection_double(const double* internal, const double* external, const double* point, double* residuals)
     void model0_image_to_world_double(const double* const internal, const double* const external, const double* pix, const double* elevation, double* dx, double* dy)
 

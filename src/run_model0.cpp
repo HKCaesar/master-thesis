@@ -5,68 +5,22 @@
 #include <memory>
 #include <string>
 
+#include <cereal/archives/json.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/array.hpp>
+
+#include "ceres/ceres.h"
+
+#include "data_set.h"
+#include "image_features.h"
+#include "model0.h"
+
 using std::tuple;
 using std::make_tuple;
 using std::vector;
 using std::array;
 using std::string;
 using std::shared_ptr;
-
-#include <cereal/archives/json.hpp>
-#include <cereal/types/vector.hpp>
-#include <cereal/types/array.hpp>
-
-#include "camera_models.h"
-#include "data_set.h"
-#include "image_features.h"
-
-// struct Model0 : public Model {
-struct Model0 {
-    Model0(const ImageFeatures& f, const array<double, 3>& internal, double ps, array<double, 6> left_cam, array<double, 6> right_cam) :
-            features(f),
-            internal(internal),
-            pixel_size(ps) {
-        // Initialize from parent model
-        // (for now hard coded left-right images)
-
-        // Initialize cameras side by side
-        cameras.push_back(left_cam);
-        cameras.push_back(right_cam);
-
-        terrain.resize(features.observations.size());
-
-        // For each observation
-        for (size_t i = 0; i < features.observations.size(); i++) {
-            // Down project to z=0 to initialize terrain
-            double dx_left, dy_left;
-            double dx_right, dy_right;
-            double elevation = 0.0;
-            image_to_world(internal.data(), cameras[0].data(), &features.observations[i][0], &elevation, &dx_left, &dy_left);
-            image_to_world(internal.data(), cameras[1].data(), &features.observations[i][2], &elevation, &dx_right, &dy_right);
-
-            // Take average of both projections
-            terrain[i] = {(dx_left + dx_right)/2.0, (dy_left + dy_right)/2.0};
-        }
-    }
-
-    template <class Archive>
-    void serialize(Archive& ar) {
-        ar(cereal::make_nvp("cameras", cameras),
-           cereal::make_nvp("terrain", terrain),
-           cereal::make_nvp("internal", internal),
-           cereal::make_nvp("pixel_size", pixel_size));
-    }
-
-    const ImageFeatures& features;
-
-    // 3 dof internals: {f, ppx, ppy}
-    const array<double, 3> internal;
-    const double pixel_size;
-
-    // Parameters
-    vector< array<double, 6> > cameras; // 6 dof cameras
-    vector< array<double, 2> > terrain; // 2 dof ground points on flat terrain
-};
 
 // Overload std::array for JSON to use []
 namespace cereal {
