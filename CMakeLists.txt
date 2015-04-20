@@ -17,13 +17,13 @@ add_executable(features_analysis
     )
 target_link_libraries(features_analysis ${OpenCV_LIBS})
 
-# Model0
-add_executable(model0
-    src/run_model0.cpp
+# GeoSolve
+add_executable(geosolve
+    src/geosolve.cpp
     src/image_features.cpp
     src/model0.cpp
 )
-target_link_libraries(model0
+target_link_libraries(geosolve
     ${OpenCV_LIBS}
     ${CERES_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
