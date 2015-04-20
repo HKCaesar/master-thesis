@@ -64,46 +64,13 @@ int main(int argc, char* argv[]) {
     const double pixel_size = 0.0085e-3;
     Model0 model(features, {48.3355e-3, 0.0093e-3, -0.0276e-3}, pixel_size, {0, 0, 269, 0, 0, 0}, {0, 0, 269, 0, 0, 0});
 
-    // Setup solver
     std::cout << "Solving..." << std::endl;
-    ceres::Problem problem;
-    for (size_t i = 0; i < model.features.observations.size(); i++) {
-        // Residual for left cam
-		ceres::CostFunction* cost_function_left =
-            Model0ReprojectionError::create(model.internal, pixel_size*model.features.observations[i][0], pixel_size*model.features.observations[i][1]);
-		problem.AddResidualBlock(cost_function_left,
-			NULL,
-			model.cameras[0].data(),
-			model.terrain[i].data()
-			);
-
-        // Residual for right cam
-		ceres::CostFunction* cost_function_right =
-            Model0ReprojectionError::create(model.internal, pixel_size*model.features.observations[i][2], pixel_size*model.features.observations[i][3]);
-		problem.AddResidualBlock(cost_function_right,
-			NULL,
-			model.cameras[1].data(),
-			model.terrain[i].data()
-			);
-    }
-
-    problem.SetParameterBlockConstant(model.cameras[0].data());
-
-    ceres::Solver::Options options;
-    options.linear_solver_type = ceres::DENSE_SCHUR;
-    options.minimizer_progress_to_stdout = true;
-    options.max_linear_solver_iterations = 3;
-    options.max_num_iterations = 30;
-    options.num_threads = 1;
-
-    ceres::Solver::Summary summary;
-    ceres::Solve(options, &problem, &summary);
-    std::cout << summary.FullReport() << "\n";
+    model.solve();
 
     std::cout << "==================" << std::endl;
     cereal::JSONOutputArchive sum(std::cout);
-    sum(model.cameras[0]);
-    sum(model.cameras[1]);
+    sum(model.solutions.back().cameras[0]);
+    sum(model.solutions.back().cameras[1]);
 
     // Serialize model with cereal
     std::ofstream ofs("model0.json");
