@@ -1,7 +1,7 @@
 #include <memory>
 #include "model0.h"
 
-Model0::Model0(const ImageFeatures& f, const array<double, 3>& internal, double ps, array<double, 6> left_cam, array<double, 6> right_cam) :
+Model0::Model0(std::shared_ptr<ImageFeatures> f, const array<double, 3>& internal, double ps, array<double, 6> left_cam, array<double, 6> right_cam) :
         features(f),
         internal(internal),
         pixel_size(ps) {
@@ -13,16 +13,16 @@ Model0::Model0(const ImageFeatures& f, const array<double, 3>& internal, double 
     init.cameras.push_back(left_cam);
     init.cameras.push_back(right_cam);
 
-    init.terrain.resize(features.observations.size());
+    init.terrain.resize(features->observations.size());
 
     // For each observation
-    for (size_t i = 0; i < features.observations.size(); i++) {
+    for (size_t i = 0; i < features->observations.size(); i++) {
         // Down project to z=0 to initialize terrain
         double dx_left, dy_left;
         double dx_right, dy_right;
         double elevation = 0.0;
-        double pix_x = pixel_size*features.observations[i][0];
-        double pix_y = pixel_size*features.observations[i][1];
+        double pix_x = pixel_size*features->observations[i][0];
+        double pix_y = pixel_size*features->observations[i][1];
         image_to_world(internal.data(), init.cameras[0].data(), &pix_x, &elevation, &dx_left, &dy_left);
         image_to_world(internal.data(), init.cameras[1].data(), &pix_y, &elevation, &dx_right, &dy_right);
 
@@ -51,10 +51,10 @@ void Model0::solve() {
 
     // Setup parameter and residual blocks
     ceres::Problem problem;
-    for (size_t i = 0; i < features.observations.size(); i++) {
+    for (size_t i = 0; i < features->observations.size(); i++) {
         // Residual for left cam
 		ceres::CostFunction* cost_function_left =
-            Model0ReprojectionError::create(internal, pixel_size*features.observations[i][0], pixel_size*features.observations[i][1]);
+            Model0ReprojectionError::create(internal, pixel_size*features->observations[i][0], pixel_size*features->observations[i][1]);
 		problem.AddResidualBlock(cost_function_left,
 			NULL,
 			working_solution.cameras[0].data(),
@@ -63,7 +63,7 @@ void Model0::solve() {
 
         // Residual for right cam
 		ceres::CostFunction* cost_function_right =
-            Model0ReprojectionError::create(internal, pixel_size*features.observations[i][2], pixel_size*features.observations[i][3]);
+            Model0ReprojectionError::create(internal, pixel_size*features->observations[i][2], pixel_size*features->observations[i][3]);
 		problem.AddResidualBlock(cost_function_right,
 			NULL,
 			working_solution.cameras[1].data(),
@@ -88,6 +88,4 @@ void Model0::solve() {
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
     std::cout << summary.FullReport() << "\n";
-
-    solutions.push_back(working_solution);
 }

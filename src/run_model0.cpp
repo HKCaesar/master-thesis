@@ -8,6 +8,7 @@
 #include <cereal/archives/json.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/array.hpp>
+#include <cereal/types/memory.hpp>
 
 #include "ceres/ceres.h"
 
@@ -33,6 +34,19 @@ namespace cereal {
     }
 }
 
+struct Project {
+    std::shared_ptr<DataSet> data_set;
+    std::shared_ptr<ImageFeatures> features;
+    std::shared_ptr<Model0> model;
+
+    template <class Archive>
+    void serialize(Archive& ar) {
+        ar(cereal::make_nvp("data", data_set),
+           cereal::make_nvp("features", features),
+           cereal::make_nvp("model", model));
+    }
+};
+
 int main(int argc, char* argv[]) {
     google::InitGoogleLogging(argv[0]);
 
@@ -50,14 +64,14 @@ int main(int argc, char* argv[]) {
     // Load images
     // defines filenames, pairwise order
     std::cout << "Loading images..." << std::endl;
-    DataSet data_set;
-    data_set.filenames.push_back(string("alinta-stockpile/DSC_5522.JPG"));
-    data_set.filenames.push_back(string("alinta-stockpile/DSC_5521.JPG"));
-    data_set.load(data_root);
+    std::shared_ptr<DataSet> data_set(new DataSet());
+    data_set->filenames.push_back(string("alinta-stockpile/DSC_5522.JPG"));
+    data_set->filenames.push_back(string("alinta-stockpile/DSC_5521.JPG"));
+    data_set->load(data_root);
 
     // Match features and obtain observations
     std::cout << "Matching features..." << std::endl;
-    ImageFeatures features(data_set, 10);
+    std::shared_ptr<ImageFeatures> features(new ImageFeatures(data_set, 10));
 
     // Create model
     std::cout << "Setting up model..." << std::endl;

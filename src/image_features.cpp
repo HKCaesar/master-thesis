@@ -59,17 +59,17 @@ void write_matches_image(string path, cv::Mat image1, cv::Mat image2,
     cv::imwrite(path, img);
 }
 
-ImageFeatures::ImageFeatures(const DataSet& ds, const size_t maximum_number_of_matches) : data_set(ds) {
+ImageFeatures::ImageFeatures(std::shared_ptr<DataSet> ds, const size_t maximum_number_of_matches) : data_set(ds) {
     cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create();
     cv::Ptr<cv::xfeatures2d::SIFT> sift = cv::xfeatures2d::SIFT::create();
     cv::Ptr<cv::FeatureDetector> detector = sift;
     cv::Ptr<cv::DescriptorExtractor> descriptor = sift;
 
     // Detect and compute descriptors
-    detector->detect(data_set.images[0], keypoint1);
-    detector->detect(data_set.images[1], keypoint2);
-    descriptor->compute(data_set.images[0], keypoint1, descriptor1);
-    descriptor->compute(data_set.images[1], keypoint2, descriptor2);
+    detector->detect(data_set->images[0], keypoint1);
+    detector->detect(data_set->images[1], keypoint2);
+    descriptor->compute(data_set->images[0], keypoint1, descriptor1);
+    descriptor->compute(data_set->images[1], keypoint2, descriptor2);
 
     if (descriptor1.empty() || descriptor2.empty()) {
         std::cerr << "Empty descriptor!" << std::endl;
@@ -94,7 +94,7 @@ ImageFeatures::ImageFeatures(const DataSet& ds, const size_t maximum_number_of_m
     vector<size_t> order = argsort(matches);
     matches = reorder(matches, order);
 
-    write_matches_image("matches.jpg", data_set.images[0], data_set.images[1], keypoint1, keypoint2, matches, maximum_number_of_matches);
+    write_matches_image("matches.jpg", data_set->images[0], data_set->images[1], keypoint1, keypoint2, matches, maximum_number_of_matches);
 
     // Store into simple ordered by distance vector of observations
     for (size_t i = 0; i < matches.size() && i < maximum_number_of_matches; i++) {

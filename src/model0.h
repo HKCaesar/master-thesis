@@ -54,17 +54,18 @@ struct Solution {
 };
 
 struct Model0 {
-    Model0(const ImageFeatures& f, const array<double, 3>& internal, double ps, array<double, 6> left_cam, array<double, 6> right_cam);
+    Model0(std::shared_ptr<ImageFeatures> f, const array<double, 3>& internal, double ps, array<double, 6> left_cam, array<double, 6> right_cam);
     void solve();
 
     template <class Archive>
     void serialize(Archive& ar) {
-        ar(cereal::make_nvp("internal", internal),
+        ar(cereal::make_nvp("features", features),
+           cereal::make_nvp("internal", internal),
            cereal::make_nvp("pixel_size", pixel_size),
            cereal::make_nvp("solutions", solutions));
     }
 
-    const ImageFeatures& features;
+    std::shared_ptr<ImageFeatures> features;
 
     // 3 dof internals: {f, ppx, ppy}
     const array<double, 3> internal;
