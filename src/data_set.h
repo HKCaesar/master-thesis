@@ -7,6 +7,8 @@
 #include <opencv2/opencv.hpp>
 
 struct DataSet {
+    DataSet() : isloaded(false) {}
+
     void load(std::string data_root) {
         for (auto& name : filenames) {
             cv::Mat im = cv::imread(data_root + "/" + name);
@@ -15,6 +17,7 @@ struct DataSet {
             }
             images.push_back(im);
         }
+        isloaded = true;
     }
 
     template <class Archive>

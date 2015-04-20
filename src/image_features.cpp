@@ -1,4 +1,5 @@
 #include <tuple>
+#include <stdexcept>
 #include "image_features.h"
 
 using std::vector;
@@ -59,7 +60,20 @@ void write_matches_image(string path, cv::Mat image1, cv::Mat image2,
     cv::imwrite(path, img);
 }
 
+ImageFeatures::ImageFeatures() :
+    maximum_number_of_matches(0) {
+}
+
 void ImageFeatures::compute() {
+    if (!data_set) {
+        throw std::runtime_error("ImageFeatures has no associated DataSet.");
+    }
+    if (maximum_number_of_matches <= 0) {
+        throw std::runtime_error("ImagesFeatures has invalid maximum number of matches: " + std::to_string(maximum_number_of_matches));
+    }
+    if (data_set->isloaded == false) {
+        throw std::runtime_error("ImageFeatures.compute() called but DataSet is not loaded");
+    }
     cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create();
     cv::Ptr<cv::xfeatures2d::SIFT> sift = cv::xfeatures2d::SIFT::create();
     cv::Ptr<cv::FeatureDetector> detector = sift;
