@@ -82,24 +82,25 @@ if __name__ == "__main__":
 
     project = json.load(open(model_filename))
     elevation = 0
-    internal = np.array(project["model"]["internal"], dtype=np.float64)
-    pixel_size = project["model"]["pixel_size"]
+    internal = np.array(project["model"]["ptr_wrapper"]["data"]["internal"], dtype=np.float64)
+    pixel_size = project["model"]["ptr_wrapper"]["data"]["pixel_size"]
 
-    left = io.imread(os.path.join(data_root, project["data"]["left"]))
-    right = io.imread(os.path.join(data_root, project["data"]["right"]))
+    left = io.imread(os.path.join(data_root, project["data_set"]["ptr_wrapper"]["data"]["filenames"][0]))
+    right = io.imread(os.path.join(data_root, project["data_set"]["ptr_wrapper"]["data"]["filenames"][1]))
     image_shape = left.shape
 
     # Down project all cameras corners to get the area
-    world_point = np.zeros((len(project["model"]["cameras"])*4, 2))
-    cam_left = project["model"]["cameras"][0]
-    cam_right = project["model"]["cameras"][1]
+    solution_number = -1
+    world_point = np.zeros((len(project["model"]["ptr_wrapper"]["data"]["solutions"][solution_number]["cameras"])*4, 2))
+    cam_left = project["model"]["ptr_wrapper"]["data"]["solutions"][solution_number]["cameras"][0]
+    cam_right = project["model"]["ptr_wrapper"]["data"]["solutions"][solution_number]["cameras"][1]
 
     corners_left  = project_corners(internal, np.array(cam_left , dtype=np.float64), pixel_size, image_shape, elevation)
     corners_right = project_corners(internal, np.array(cam_right, dtype=np.float64), pixel_size, image_shape, elevation)
 
     world_rect = WorldRect.from_points(np.vstack([corners_left, corners_right]))
 
-    gsd = 0.2
+    gsd = 0.1
     tile = FlatTile(world_rect, gsd)
 
     tile.draw_cam_trace(corners_left)

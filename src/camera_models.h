@@ -43,6 +43,7 @@ bool model0_projection(
     return true;
 }
 
+// Instanciate the templated version for cython export
 inline bool model0_projection_double(const double* internal, const double* external, const double* point, double* residuals) {
     return model0_projection<double>(internal, external, point, residuals);
 }
@@ -98,6 +99,7 @@ void image_to_world(const T* const internal,
 	*dy = sol(1, 0) / sol(2, 0);
 }
 
+// Instanciate the templated version for cython export
 inline void model0_image_to_world_double(const double* const internal,
                                   const double* const external,
                                   const double* pix,
