@@ -16,25 +16,8 @@ void Model0::manual_setup(std::shared_ptr<ImageFeatures> f, const array<double, 
     Solution init;
     init.cameras.push_back(left_cam);
     init.cameras.push_back(right_cam);
-
-    init.terrain.resize(features->observations.size());
-
-    // For each observation
-    for (size_t i = 0; i < features->observations.size(); i++) {
-        // Down project to z=0 to initialize terrain
-        double dx_left, dy_left;
-        double dx_right, dy_right;
-        double elevation = 0.0;
-        double pix_x = pixel_size*features->observations[i][0];
-        double pix_y = pixel_size*features->observations[i][1];
-        image_to_world(internal.data(), init.cameras[0].data(), &pix_x, &elevation, &dx_left, &dy_left);
-        image_to_world(internal.data(), init.cameras[1].data(), &pix_y, &elevation, &dx_right, &dy_right);
-
-        // Take average of both projections
-        init.terrain[i] = {(dx_left + dx_right)/2.0, (dy_left + dy_right)/2.0};
-    }
-
     solutions.push_back(init);
+
 }
 
 class LogSolutionCallback : public ceres::IterationCallback {
@@ -50,6 +33,29 @@ public:
 };
 
 void Model0::solve() {
+    // Verify features have been computed
+    if (!features || features->observations.size() == 0) {
+        throw std::runtime_error("Attempting to solve model0 but no observations are available");
+    }
+
+    // Initialize terrain by down projecting features
+    solutions[0].terrain.resize(features->observations.size());
+
+    // For each observation
+    for (size_t i = 0; i < features->observations.size(); i++) {
+        // Down project to z=0 to initialize terrain
+        double dx_left, dy_left;
+        double dx_right, dy_right;
+        double elevation = 0.0;
+        double pix_x = pixel_size*features->observations[i][0];
+        double pix_y = pixel_size*features->observations[i][1];
+        image_to_world(internal.data(), solutions[0].cameras[0].data(), &pix_x, &elevation, &dx_left, &dy_left);
+        image_to_world(internal.data(), solutions[0].cameras[1].data(), &pix_y, &elevation, &dx_right, &dy_right);
+
+        // Take average of both projections
+        solutions[0].terrain[i] = {(dx_left + dx_right)/2.0, (dy_left + dy_right)/2.0};
+    }
+
     // The working solution is the one holding ceres' parameter blocks
     Solution working_solution(solutions[0]);
 

@@ -54,6 +54,9 @@ struct Project {
     static Project from_file(const std::string& filename) {
         Project p;
         std::ifstream ifs(filename);
+        if (!ifs.good()) {
+            throw std::runtime_error("Can't open " + filename);
+        }
         cereal::JSONInputArchive ar(ifs);
         p.serialize(ar);
         return p;
@@ -84,9 +87,11 @@ void base_model0(string filename) {
     project.features->data_set = project.data_set;
     project.features->maximum_number_of_matches = 10;
 
-    std::ofstream ofs(filename);
-    cereal::JSONOutputArchive ar(ofs);
-    project.serialize(ar);
+    project.model = std::shared_ptr<Model0>(new Model0());
+    const double pixel_size = 0.0085e-3;
+    project.model->manual_setup(project.features, {48.3355e-3, 0.0093e-3, -0.0276e-3}, pixel_size, {0, 0, 269, 0, 0, 0}, {0, 0, 269, 0, 0, 0});
+
+    project.to_file(filename);
 }
 
 int main(int argc, char* argv[]) {
@@ -109,8 +114,17 @@ int main(int argc, char* argv[]) {
         project.to_file("loadtest-output.json");
     }
     else if (command == "features") {
+        Project project = Project::from_file(project_filename);
+        std::cout << "Loading images" << std::endl;
+        project.data_set->load(data_root);
+        std::cout << "Computing features" << std::endl;
+        project.features->compute();
+        project.to_file(project_filename);
     }
     else if (command == "solve") {
+        Project project = Project::from_file(project_filename);
+        project.model->solve();
+        project.to_file(project_filename);
     }
     else if (command == "model0") {
         // Load images
@@ -130,17 +144,17 @@ int main(int argc, char* argv[]) {
         // Create model
         std::cout << "Setting up model..." << std::endl;
         const double pixel_size = 0.0085e-3;
-        Model0 model;
-        model.manual_setup(features, {48.3355e-3, 0.0093e-3, -0.0276e-3}, pixel_size, {0, 0, 269, 0, 0, 0}, {0, 0, 269, 0, 0, 0});
+        std::shared_ptr<Model0> model(new Model0());
+        model->manual_setup(features, {48.3355e-3, 0.0093e-3, -0.0276e-3}, pixel_size, {0, 0, 269, 0, 0, 0}, {0, 0, 269, 0, 0, 0});
 
         std::cout << "Solving..." << std::endl;
-        model.solve();
+        model->solve();
 
         // Serialize model with cereal
         std::ofstream ofs(project_filename);
         cereal::JSONOutputArchive output(ofs);
         output(
-            cereal::make_nvp("data", data_set),
+            cereal::make_nvp("data_set", data_set),
             cereal::make_nvp("features", features),
             cereal::make_nvp("model", model)
         );

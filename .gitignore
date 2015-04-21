@@ -1,5 +1,5 @@
 .*.swp
 build/
-build-clang/
+clang-build/
 ceres/
 __pycache__/
