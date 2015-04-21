@@ -122,41 +122,12 @@ int main(int argc, char* argv[]) {
         project.to_file(project_filename);
     }
     else if (command == "solve") {
+        std::cout << "Solving..." << std::endl;
         Project project = Project::from_file(project_filename);
         project.model->solve();
         project.to_file(project_filename);
     }
-    else if (command == "model0") {
-        // Load images
-        std::cout << "Loading images..." << std::endl;
-        std::shared_ptr<DataSet> data_set(new DataSet());
-        data_set->filenames.push_back(string("alinta-stockpile/DSC_5522.JPG"));
-        data_set->filenames.push_back(string("alinta-stockpile/DSC_5521.JPG"));
-        data_set->load(data_root);
-
-        // Match features and obtain observations
-        std::cout << "Matching features..." << std::endl;
-        std::shared_ptr<ImageFeatures> features(new ImageFeatures());
-        features->data_set = data_set;
-        features->maximum_number_of_matches = 10;
-        features->compute();
-
-        // Create model
-        std::cout << "Setting up model..." << std::endl;
-        const double pixel_size = 0.0085e-3;
-        std::shared_ptr<Model0> model(new Model0());
-        model->manual_setup(features, {48.3355e-3, 0.0093e-3, -0.0276e-3}, pixel_size, {0, 0, 269, 0, 0, 0}, {0, 0, 269, 0, 0, 0});
-
-        std::cout << "Solving..." << std::endl;
-        model->solve();
-
-        // Serialize model with cereal
-        std::ofstream ofs(project_filename);
-        cereal::JSONOutputArchive output(ofs);
-        output(
-            cereal::make_nvp("data_set", data_set),
-            cereal::make_nvp("features", features),
-            cereal::make_nvp("model", model)
-        );
+    else {
+        std::cerr << "Invalid command: " << command << std::endl;
     }
 }
