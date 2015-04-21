@@ -148,24 +148,27 @@ def main():
     image_shape = left.shape
 
     # Down project all cameras corners to get the area
-    solution_number = -1
-    cam_left = np.array(project["model"]["ptr_wrapper"]["data"]["solutions"][solution_number]["cameras"][0], dtype=np.float64)
-    cam_right = np.array(project["model"]["ptr_wrapper"]["data"]["solutions"][solution_number]["cameras"][1], dtype=np.float64)
 
-    corners_left  = project_corners(internal, cam_left , pixel_size, image_shape, elevation)
-    corners_right = project_corners(internal, cam_right, pixel_size, image_shape, elevation)
+    number_of_solutions = len(project["model"]["ptr_wrapper"]["data"]["solutions"])
+    for solution_number in range(number_of_solutions):
+        print("{}/{}".format(solution_number+1, number_of_solutions))
+        cam_left = np.array(project["model"]["ptr_wrapper"]["data"]["solutions"][solution_number]["cameras"][0], dtype=np.float64)
+        cam_right = np.array(project["model"]["ptr_wrapper"]["data"]["solutions"][solution_number]["cameras"][1], dtype=np.float64)
 
-    world_rect = WorldRect.from_points(np.vstack([corners_left, corners_right]))
+        corners_left  = project_corners(internal, cam_left , pixel_size, image_shape, elevation)
+        corners_right = project_corners(internal, cam_right, pixel_size, image_shape, elevation)
 
-    gsd = 0.2
-    tile = FlatTile(world_rect, gsd)
+        world_rect = WorldRect.from_points(np.vstack([corners_left, corners_right]))
 
-    tile.draw_cam_trace(corners_left)
-    tile.draw_cam_trace(corners_right)
-    tile.project_camera(internal, cam_left, elevation, pixel_size, left)
-    tile.project_camera(internal, cam_right, elevation, pixel_size, right)
+        gsd = 0.25
+        tile = FlatTile(world_rect, gsd)
 
-    io.imsave("tile.jpg", tile.image)
+        tile.draw_cam_trace(corners_left)
+        tile.draw_cam_trace(corners_right)
+        tile.project_camera(internal, cam_left, elevation, pixel_size, left)
+        tile.project_camera(internal, cam_right, elevation, pixel_size, right)
+
+        io.imsave("tile{}.jpg".format(solution_number), tile.image)
 
 if __name__ == "__main__":
     main()
