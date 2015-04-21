@@ -1,10 +1,14 @@
 #include <memory>
 #include "model0.h"
 
-Model0::Model0(std::shared_ptr<ImageFeatures> f, const array<double, 3>& internal, double ps, array<double, 6> left_cam, array<double, 6> right_cam) :
-        features(f),
-        internal(internal),
-        pixel_size(ps) {
+Model0::Model0() : pixel_size(0.0) {
+}
+
+void Model0::manual_setup(std::shared_ptr<ImageFeatures> f, const array<double, 3>& intern, double ps, array<double, 6> left_cam, array<double, 6> right_cam) {
+    features = f;
+    internal = intern;
+    pixel_size = ps;
+
     // Initialize initial solution from parent model
     // (for now hard coded left-right images)
 

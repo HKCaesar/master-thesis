@@ -27,6 +27,7 @@ struct ImageFeatures {
     template <class Archive>
     void serialize(Archive& ar) {
         ar(cereal::make_nvp("observations", observations),
+           cereal::make_nvp("maximum_number_of_matches", maximum_number_of_matches),
            cereal::make_nvp("data_set", data_set));
     }
 
