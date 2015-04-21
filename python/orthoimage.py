@@ -49,7 +49,7 @@ def get_pixel_colors(image, pixel_points):
     return image[indexes[:,0], indexes[:,1]]
 
 def mm_to_pixels(pixels, pixel_size, shape):
-    return (pixels / pixel_size)[:, [1, 0]] * np.array([1, -1]) + np.array(shape[:2])/2
+    return (pixels / pixel_size)[:, [1, 0]] * np.array([-1, 1]) + np.array(shape[:2])/2
 
 class FlatTile(object):
     def __init__(self, rect, gsd):
@@ -100,8 +100,8 @@ class FlatTile(object):
 
         # All pixels in the tile image
         # 'ij' indexing and reversed i
-        ii, jj = np.meshgrid(np.arange(0, self.image.shape[1], dtype=np.long), np.arange(0, self.image.shape[0], dtype=np.long), indexing="ij")
-        tile_pixels = np.column_stack((ii.flat[::-1], jj.flat))
+        ii, jj = np.meshgrid(np.arange(0, self.image.shape[0], dtype=np.long), np.arange(0, self.image.shape[1], dtype=np.long), indexing="ij")
+        tile_pixels = np.column_stack((ii.flat, jj.flat))
 
         # Corresponding ground points in world coordinates
         ones = elevation*np.ones((tile_pixels.shape[0], 1), dtype=np.float64)
@@ -109,11 +109,10 @@ class FlatTile(object):
 
         # Project ground points to get pixel coordinates
         image_pixels = pymodel0.model0_projection_array(internal, external, world_points)
-        print(image_pixels.shape)
         image_pixels = mm_to_pixels(image_pixels, pixel_size, image.shape)
 
         # Remove out of bounds pixels
-        mask = image_bounds_mask(image_pixels, self.image.shape)
+        mask = image_bounds_mask(image_pixels, image.shape)
         image_pixels = image_pixels[mask].reshape((-1, 2))
         tile_pixels = tile_pixels[mask].reshape((-1, 2))
 
@@ -125,10 +124,10 @@ def project_corners(internal, camera, pixel_size, im_shape, elevation):
     """Project the four corners of an image onto the ground"""
     rows, cols = im_shape[0], im_shape[1]
     points_image = np.array([
-        [ pixel_size*rows/2,  pixel_size*cols/2],
-        [ pixel_size*rows/2, -pixel_size*cols/2],
-        [-pixel_size*rows/2,  pixel_size*cols/2],
-        [-pixel_size*rows/2, -pixel_size*cols/2]])
+        [ pixel_size*cols/2,  pixel_size*rows/2],
+        [-pixel_size*cols/2,  pixel_size*rows/2],
+        [ pixel_size*cols/2, -pixel_size*rows/2],
+        [-pixel_size*cols/2, -pixel_size*rows/2]])
     return np.array([pymodel0.model0_inverse(internal, camera, pix, elevation) for pix in points_image])
 
 def main():
@@ -158,7 +157,7 @@ def main():
 
     world_rect = WorldRect.from_points(np.vstack([corners_left, corners_right]))
 
-    gsd = 0.1
+    gsd = 0.2
     tile = FlatTile(world_rect, gsd)
 
     tile.draw_cam_trace(corners_left)

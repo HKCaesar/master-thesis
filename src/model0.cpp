@@ -64,6 +64,7 @@ void Model0::solve() {
     for (size_t i = 0; i < features->observations.size(); i++) {
         // Residual for left cam
 		ceres::CostFunction* cost_function_left =
+            // TODO: isn't this wrong? need to also add/subtract im.shape/2 to convert from px to mm
             Model0ReprojectionError::create(internal, pixel_size*features->observations[i][0], pixel_size*features->observations[i][1]);
 		problem.AddResidualBlock(cost_function_left,
 			NULL,
