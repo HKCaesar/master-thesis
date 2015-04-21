@@ -51,13 +51,15 @@ class FlatTile(object):
         for c1, c2 in combinations(corners, 2):
             a = self.world_to_image(c1)
             b = self.world_to_image(c2)
-            rr, cc = draw.line(a[0], a[1], b[0], b[1])
+            rr, cc, val = draw.line_aa(a[0], a[1], b[0], b[1])
             mask = np.logical_and.reduce((
                 rr > 0,
                 rr < self.image.shape[0],
                 cc > 0,
                 cc < self.image.shape[1]))
-            self.image[rr[mask], cc[mask], :] = 255
+            self.image[rr[mask], cc[mask], 0] = val[mask] * 255
+            self.image[rr[mask], cc[mask], 1] = val[mask] * 255
+            self.image[rr[mask], cc[mask], 2] = val[mask] * 255
 
     def project_one_camera():
         pass
