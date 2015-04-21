@@ -151,7 +151,7 @@ def main():
 
     number_of_solutions = len(project["model"]["ptr_wrapper"]["data"]["solutions"])
     for solution_number in range(number_of_solutions):
-        print("{}/{}".format(solution_number+1, number_of_solutions))
+        print("{}/{}".format(solution_number, number_of_solutions))
         cam_left = np.array(project["model"]["ptr_wrapper"]["data"]["solutions"][solution_number]["cameras"][0], dtype=np.float64)
         cam_right = np.array(project["model"]["ptr_wrapper"]["data"]["solutions"][solution_number]["cameras"][1], dtype=np.float64)
 
