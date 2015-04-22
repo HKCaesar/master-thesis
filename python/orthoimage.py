@@ -6,6 +6,8 @@ import numpy as np
 from skimage import io, draw
 from itertools import chain, combinations
 
+from PIL import Image, ImageDraw
+
 import sensor_types
 from project import Project
 
@@ -76,19 +78,13 @@ class FlatTile(object):
         self.image[i, j] = color
 
     def draw_cam_trace(self, corners):
-        # Draw a line between each corner pair
+        im = Image.fromarray(self.image)
+        draw = ImageDraw.Draw(im)
         for c1, c2 in combinations(corners, 2):
             a = self.world_to_image(c1)
             b = self.world_to_image(c2)
-            rr, cc, val = draw.line_aa(a[0], a[1], b[0], b[1])
-            mask = np.logical_and.reduce((
-                rr > 0,
-                rr < self.image.shape[0],
-                cc > 0,
-                cc < self.image.shape[1]))
-            self.image[rr[mask], cc[mask], 0] = val[mask] * 255
-            self.image[rr[mask], cc[mask], 1] = val[mask] * 255
-            self.image[rr[mask], cc[mask], 2] = val[mask] * 255
+            draw.line([tuple(a[::-1]), tuple(b[::-1])], fill="white", width=2)
+        self.image = np.array(im, dtype=np.uint8)
 
     def project_camera(self, internal, external, elevation, pixel_size, image):
         """
@@ -164,8 +160,8 @@ def main():
 
         tile.draw_cam_trace(corners_left)
         tile.draw_cam_trace(corners_right)
-        tile.project_camera(internal, cam_left, elevation, pixel_size, left)
-        tile.project_camera(internal, cam_right, elevation, pixel_size, right)
+        # tile.project_camera(internal, cam_left, elevation, pixel_size, left)
+        # tile.project_camera(internal, cam_right, elevation, pixel_size, right)
 
         io.imsave("tile{}.jpg".format(solution_number), tile.image)
 
