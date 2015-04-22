@@ -2,12 +2,12 @@
 
 import sys
 import os.path
-import json
 import numpy as np
 from skimage import io, draw
 from itertools import chain, combinations
 
 import sensor_types
+from project import Project
 
 sys.path.append("build")
 try: import pymodel0
@@ -137,22 +137,22 @@ def main():
     data_root = sys.argv[1]
     model_filename = sys.argv[2]
 
-    project = json.load(open(model_filename))
+    project = Project(model_filename)
     elevation = 0
-    internal = np.array(project["model"]["ptr_wrapper"]["data"]["internal"], dtype=np.float64)
-    pixel_size = project["model"]["ptr_wrapper"]["data"]["pixel_size"]
+    internal = np.array(project.model.internal, dtype=np.float64)
+    pixel_size = project.model.pixel_size
 
-    left = io.imread(os.path.join(data_root, project["data_set"]["ptr_wrapper"]["data"]["filenames"][0]))
-    right = io.imread(os.path.join(data_root, project["data_set"]["ptr_wrapper"]["data"]["filenames"][1]))
+    left = io.imread(os.path.join(data_root, project.data_set.filenames[0]))
+    right = io.imread(os.path.join(data_root, project.data_set.filenames[1]))
     image_shape = left.shape
 
     # Down project all cameras corners to get the area
 
-    number_of_solutions = len(project["model"]["ptr_wrapper"]["data"]["solutions"])
+    number_of_solutions = len(project.model.solutions)
     for solution_number in range(number_of_solutions):
         print("{}/{}".format(solution_number, number_of_solutions))
-        cam_left = np.array(project["model"]["ptr_wrapper"]["data"]["solutions"][solution_number]["cameras"][0], dtype=np.float64)
-        cam_right = np.array(project["model"]["ptr_wrapper"]["data"]["solutions"][solution_number]["cameras"][1], dtype=np.float64)
+        cam_left = np.array(project.model.solutions[solution_number].cameras[0], dtype=np.float64)
+        cam_right = np.array(project.model.solutions[solution_number].cameras[1], dtype=np.float64)
 
         corners_left  = project_corners(internal, cam_left , pixel_size, image_shape, elevation)
         corners_right = project_corners(internal, cam_right, pixel_size, image_shape, elevation)
