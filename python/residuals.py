@@ -6,6 +6,8 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
+from orthoimage import mm_to_pixels
+
 sys.path.append("build")
 try: import pymodel0
 except: print("Error importing pymodel0"); sys.exit(-1)
@@ -25,6 +27,9 @@ class ImageFeatures(object):
     def __init__(self, data):
         self.observations = np.array(data["observations"], dtype=np.float64)
 
+class DataSet(object):
+    def __init__(self, data):
+        self.filenames = data["ptr_wrapper"]["data"]["filenames"]
 
 class Project(object):
     def __init__(self, filename):
@@ -32,8 +37,6 @@ class Project(object):
         self.model = Model0(p["model"]["ptr_wrapper"]["data"])
         self.features = ImageFeatures(p["features"]["ptr_wrapper"]["data"])
         # self.data_set = DataSet(p["data_set"]["ptr_wrapper"]["data"])
-
-from orthoimage import mm_to_pixels
 
 def compute_residuals(project, solution_number):
     terrain = np.hstack((project.model.solutions[0].terrain, np.zeros((len(project.model.solutions[0].terrain), 1))))

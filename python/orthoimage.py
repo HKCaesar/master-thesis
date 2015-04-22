@@ -7,6 +7,8 @@ import numpy as np
 from skimage import io, draw
 from itertools import chain, combinations
 
+import sensor_types
+
 sys.path.append("build")
 try: import pymodel0
 except: print("Error importing pymodel0"); sys.exit(-1)
@@ -47,9 +49,6 @@ def get_pixel_colors(image, pixel_points):
     "Read image value at float coordinate using nearest neighbour interpolation"
     indexes = np.asarray(np.round(pixel_points), dtype=int)
     return image[indexes[:,0], indexes[:,1]]
-
-def mm_to_pixels(pixels, pixel_size, shape):
-    return (pixels / pixel_size)[:, [1, 0]] * np.array([-1, 1]) + np.array(shape[:2])/2
 
 class FlatTile(object):
     def __init__(self, rect, gsd):
@@ -109,7 +108,7 @@ class FlatTile(object):
 
         # Project ground points to get pixel coordinates
         image_pixels = pymodel0.model0_projection_array(internal, external, world_points)
-        image_pixels = mm_to_pixels(image_pixels, pixel_size, image.shape)
+        image_pixels = sensor_types.sensor_to_pixel(image_pixels, pixel_size, image.shape[0], image.shape[1])
 
         # Remove out of bounds pixels
         mask = image_bounds_mask(image_pixels, image.shape)
