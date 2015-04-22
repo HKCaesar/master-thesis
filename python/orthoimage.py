@@ -86,6 +86,32 @@ class FlatTile(object):
             draw.line([tuple(a[::-1]), tuple(b[::-1])], fill="white", width=2)
         self.image = np.array(im, dtype=np.uint8)
 
+    def draw_observations(self, internal, external, elevation, project, observations):
+        im = Image.fromarray(self.image)
+        draw = ImageDraw.Draw(im)
+        sensors = sensor_types.pixel_to_sensor(observations, project.model.pixel_size, project.model.rows, project.model.cols)
+        world_points = pymodel0.model0_inverse_array(internal, external, sensors, elevation)
+        size = 3
+        for point in world_points:
+            i, j = self.world_to_image(point[:2])
+            draw.ellipse([j-size, i-size, j+size, i+size], fill="blue", outline="black")
+        self.image = np.array(im, dtype=np.uint8)
+
+    def draw_obs_pair(self, internal, cam_a, cam_b, elevation, project, obs_a, obs_b):
+        im = Image.fromarray(self.image)
+        draw = ImageDraw.Draw(im)
+        sensors_a = sensor_types.pixel_to_sensor(obs_a, project.model.pixel_size, project.model.rows, project.model.cols)
+        sensors_b = sensor_types.pixel_to_sensor(obs_b, project.model.pixel_size, project.model.rows, project.model.cols)
+        world_points_a = pymodel0.model0_inverse_array(internal, cam_a, sensors_a, elevation)
+        world_points_b = pymodel0.model0_inverse_array(internal, cam_b, sensors_b, elevation)
+
+        size = 3
+        for (point_a, point_b) in zip(world_points_a, world_points_b):
+            i_a, j_a = self.world_to_image(point_a[:2])
+            i_b, j_b = self.world_to_image(point_b[:2])
+            draw.line([j_a, i_a, j_b, i_b], fill="green", width=3)
+        self.image = np.array(im, dtype=np.uint8)
+
     def project_camera(self, internal, external, elevation, pixel_size, image):
         """
         Orthorectify one image onto the tile
@@ -114,6 +140,7 @@ class FlatTile(object):
         # Retrive RGB values and store them
         pixel_colors = get_pixel_colors(image, image_pixels)
         self.image[tile_pixels[:,0], tile_pixels[:,1]] = pixel_colors
+
 
 def project_corners(internal, camera, pixel_size, im_shape, elevation):
     """Project the four corners of an image onto the ground"""
@@ -146,7 +173,7 @@ def main():
 
     number_of_solutions = len(project.model.solutions)
     for solution_number in range(number_of_solutions):
-        print("{}/{}".format(solution_number, number_of_solutions))
+        print("{}/{}".format(solution_number+1, number_of_solutions))
         cam_left = np.array(project.model.solutions[solution_number].cameras[0], dtype=np.float64)
         cam_right = np.array(project.model.solutions[solution_number].cameras[1], dtype=np.float64)
 
@@ -160,8 +187,11 @@ def main():
 
         tile.draw_cam_trace(corners_left)
         tile.draw_cam_trace(corners_right)
-        # tile.project_camera(internal, cam_left, elevation, pixel_size, left)
-        # tile.project_camera(internal, cam_right, elevation, pixel_size, right)
+        tile.project_camera(internal, cam_left, elevation, pixel_size, left)
+        tile.project_camera(internal, cam_right, elevation, pixel_size, right)
+        tile.draw_observations(internal, cam_left, elevation, project, project.features.observations[:,[0,1]])
+        tile.draw_observations(internal, cam_right, elevation, project, project.features.observations[:,[2,3]])
+        tile.draw_obs_pair(internal, cam_left, cam_right, elevation, project, project.features.observations[:,[0,1]], project.features.observations[:,[2,3]])
 
         io.imsave("tile{}.jpg".format(solution_number), tile.image)
 

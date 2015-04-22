@@ -43,3 +43,14 @@ def model0_inverse(np.ndarray[double, ndim=1] internal, np.ndarray[double, ndim=
     model0_image_to_world_double(&internal[0], &external[0], &pix[0], &elevation, &dx, &dy)
     return np.array([dx, dy], dtype=np.float64)
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def model0_inverse_array(np.ndarray[double, ndim=1] internal, np.ndarray[double, ndim=1] external, np.ndarray[double, ndim=2] pix, double elevation):
+    assert_size(internal, 3)
+    assert_size(external, 6)
+
+    cdef np.ndarray[double, ndim=2] result = np.zeros((pix.shape[0], 3), dtype=np.float64)
+    cdef long i
+    for i in range(pix.shape[0]):
+        model0_image_to_world_double(&internal[0], &external[0], &pix[i, 0], &elevation, &result[i, 0], &result[i, 1])
+    return result
