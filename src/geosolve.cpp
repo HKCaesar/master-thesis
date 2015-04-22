@@ -90,6 +90,8 @@ void base_model0(string filename) {
     project.model = std::shared_ptr<Model0>(new Model0());
     const double pixel_size = 0.0085e-3;
     project.model->manual_setup(project.features, {48.3355e-3, 0.0093e-3, -0.0276e-3}, pixel_size, {0, 0, 269, 0, 0, 0}, {0, 0, 269, 0, 0, 0});
+    project.model->rows = 2832;
+    project.model->cols = 4256;
 
     project.to_file(filename);
 }

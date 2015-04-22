@@ -1,7 +1,7 @@
 #include <memory>
 #include "model0.h"
 
-Model0::Model0() : pixel_size(0.0) {
+Model0::Model0() : pixel_size(0.0), rows(0.0), cols(0.0) {
 }
 
 void Model0::manual_setup(std::shared_ptr<ImageFeatures> f, const array<double, 3>& intern, double ps, array<double, 6> left_cam, array<double, 6> right_cam) {
@@ -63,9 +63,8 @@ void Model0::solve() {
     ceres::Problem problem;
     for (size_t i = 0; i < features->observations.size(); i++) {
         // Residual for left cam
-		ceres::CostFunction* cost_function_left =
-            // TODO: isn't this wrong? need to also add/subtract im.shape/2 to convert from px to mm
-            Model0ReprojectionError::create(internal, pixel_size*features->observations[i][0], pixel_size*features->observations[i][1]);
+        sensor_t obs_left = pixel_t(features->observations[i][0], features->observations[i][1]).to_sensor(pixel_size, rows, cols);
+		ceres::CostFunction* cost_function_left = Model0ReprojectionError::create(internal, obs_left);
 		problem.AddResidualBlock(cost_function_left,
 			NULL,
 			working_solution.cameras[0].data(),
@@ -73,8 +72,8 @@ void Model0::solve() {
 			);
 
         // Residual for right cam
-		ceres::CostFunction* cost_function_right =
-            Model0ReprojectionError::create(internal, pixel_size*features->observations[i][2], pixel_size*features->observations[i][3]);
+        sensor_t obs_right = pixel_t(features->observations[i][2], features->observations[i][3]).to_sensor(pixel_size, rows, cols);
+		ceres::CostFunction* cost_function_right = Model0ReprojectionError::create(internal, obs_right);
 		problem.AddResidualBlock(cost_function_right,
 			NULL,
 			working_solution.cameras[1].data(),

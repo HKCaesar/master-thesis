@@ -112,12 +112,13 @@ void ImageFeatures::compute() {
 
     // Store into simple ordered by distance vector of observations
     for (size_t i = 0; i < matches.size() && i < maximum_number_of_matches; i++) {
-        // query is kp1, train is kp2 (see declaration of matcher.match
+        // query is kp1, train is kp2 (see declaration of matcher.match)
+        // saved in pixel coordinates: (y, x) == (i, j)
         observations.push_back(array<double, 4>{
-                keypoint1[matches[i].queryIdx].pt.x,
                 keypoint1[matches[i].queryIdx].pt.y,
-                keypoint2[matches[i].trainIdx].pt.x,
-                keypoint2[matches[i].trainIdx].pt.y
+                keypoint1[matches[i].queryIdx].pt.x,
+                keypoint2[matches[i].trainIdx].pt.y,
+                keypoint2[matches[i].trainIdx].pt.x
             });
     }
 }

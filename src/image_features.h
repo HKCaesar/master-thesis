@@ -20,6 +20,7 @@ struct ImageFeatures {
 
     std::shared_ptr<DataSet> data_set;
     size_t maximum_number_of_matches;
+    // Observations in pixel coordinates (i, j)
     std::vector<std::array<double, 4>> observations;
 
     void compute();
