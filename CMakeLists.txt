@@ -29,6 +29,14 @@ target_link_libraries(geosolve
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
+# Unit tests
+include_directories("../gtest-1.7.0/include")
+find_library(GTESTLIB gtest "../gtest-1.7.0/build")
+add_executable(unittests
+    unittests/types.cpp
+)
+target_link_libraries(unittests ${GTESTLIB} ${CMAKE_THREAD_LIBS_INIT})
+
 # Cython module
 # Should use find_package(PythonLibs 3), but couldn't get it to work
 # so setting manually for now
@@ -60,7 +68,3 @@ set_target_properties(pymodel0 PROPERTIES COMPILE_FLAGS
 add_custom_command(TARGET pymodel0 POST_BUILD
     COMMAND mv libpymodel0.so pymodel0.so
 )
-
-# For reference, commands when compiling cython module with distutils are:
-# x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -g -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -fPIC -I/usr/include/python3.4m -c model0.cpp -o build/temp.linux-x86_64-3.4/model0.o
-#br x86_64-linux-gnu-g++ -pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions -Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-Bsymbolic-functions -Wl,-z,relro -g -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 build/temp.linux-x86_64-3.4/model0.o -o /home/victor/Documents/DTU/S4-MasterThesis/code/src/model0.cpython-34m.so
