@@ -83,6 +83,7 @@ void test_featuresgraph(string filename) {
 
     std::shared_ptr<FeaturesGraph> features(new FeaturesGraph());
     features->number_of_matches = 15;
+    features->add_edge(0, 1);
     std::ofstream ofs(filename);
     cereal::JSONOutputArchive ar(ofs);
     ar(data_set, features);

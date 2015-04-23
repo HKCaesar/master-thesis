@@ -27,6 +27,7 @@ struct obs_pair {
 class FeaturesGraph {
 public:
     FeaturesGraph();
+    void add_edge(size_t cam_a, size_t cam_b);
     void compute();
 
     template <class Archive>

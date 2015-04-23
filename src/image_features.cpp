@@ -13,6 +13,10 @@ FeaturesGraph::FeaturesGraph() :
     computed(false) {
 }
 
+void FeaturesGraph::add_edge(size_t cam_a, size_t cam_b) {
+    edges.push_back(obs_pair {cam_a, cam_b, std::vector<pixel_t>(), std::vector<pixel_t>()});
+}
+
 // Returns the list of indexes that sort the match array by distance
 vector<size_t> argsort(vector<cv::DMatch> matches) {
     // Extend the vector with indexes
