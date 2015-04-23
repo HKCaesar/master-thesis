@@ -17,6 +17,11 @@ struct obs_pair {
     size_t cam_a, cam_b;
     std::vector<pixel_t> obs_a, obs_b;
 
+    void compute(const DataSet& data_set,
+                 cv::Ptr<cv::FeatureDetector>,
+                 cv::Ptr<cv::DescriptorExtractor>,
+                 size_t number_of_matches);
+
     template <class Archive>
     void serialize(Archive& ar) {
         ar(NVP(cam_a), NVP(cam_b),
@@ -24,6 +29,7 @@ struct obs_pair {
     }
 };
 
+// TODO customizable algorithm, parameters, etc...
 class FeaturesGraph {
 public:
     FeaturesGraph();

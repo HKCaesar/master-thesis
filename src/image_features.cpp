@@ -74,6 +74,74 @@ ImageFeatures::ImageFeatures() :
     maximum_number_of_matches(0) {
 }
 
+void FeaturesGraph::compute() {
+    if (!data_set) {
+        throw std::runtime_error("FeaturesGraph has no associated DataSet.");
+    }
+    if (number_of_matches <= 0) {
+        throw std::runtime_error("FeaturesGraph has invalid maximum number of matches: " + std::to_string(number_of_matches));
+    }
+    if (data_set->isloaded == false) {
+        throw std::runtime_error("FeaturesGraph.compute() called but DataSet is not loaded");
+    }
+
+    cv::Ptr<cv::xfeatures2d::SIFT> sift = cv::xfeatures2d::SIFT::create();
+    for (size_t i = 0; i < edges.size(); i++) {
+        edges[i].compute(*data_set, sift, sift, number_of_matches);
+    }
+}
+
+void obs_pair::compute(const DataSet& data_set,
+                       cv::Ptr<cv::FeatureDetector> detector,
+                       cv::Ptr<cv::DescriptorExtractor> descriptor,
+                       size_t number_of_matches) {
+    std::vector<cv::KeyPoint> keypoint1;
+    std::vector<cv::KeyPoint> keypoint2;
+    cv::Mat descriptor1;
+    cv::Mat descriptor2;
+    std::vector<cv::DMatch> matches;
+
+    // Detect and compute descriptors
+    detector->detect(data_set.images[cam_a], keypoint1);
+    detector->detect(data_set.images[cam_b], keypoint2);
+    descriptor->compute(data_set.images[cam_a], keypoint1, descriptor1);
+    descriptor->compute(data_set.images[cam_b], keypoint2, descriptor2);
+
+    if (descriptor1.empty() || descriptor2.empty()) {
+        std::cerr << "Empty descriptor!" << std::endl;
+    }
+
+    // Match using FLANN
+    // FLANN needs type of descriptor to be CV_32F
+    if (descriptor1.type()!= CV_32F) {
+        descriptor1.convertTo(descriptor1, CV_32F);
+    }
+    if (descriptor2.type()!= CV_32F) {
+        descriptor2.convertTo(descriptor2, CV_32F);
+    }
+    cv::FlannBasedMatcher matcher;
+    matcher.match(descriptor1, descriptor2, matches);
+
+    // Sort matches by distance
+    // Note that keypoints don't need to be reordered because the index
+    // of a match's keypoint is stored in match.queryIdx and match.trainIdx
+    // (i.e. is not given implicitly by the order of the keypoint vector)
+    vector<size_t> order = argsort(matches);
+    matches = reorder(matches, order);
+
+    // Store into simple ordered by distance vector of observations
+    for (size_t i = 0; i < matches.size() && i < number_of_matches; i++) {
+        // query is kp1, train is kp2 (see declaration of matcher.match)
+        // saved in pixel coordinates: opencv(y, x) == pixel_t(i, j)
+        obs_a.push_back(pixel_t(
+                keypoint1[matches[i].queryIdx].pt.y,
+                keypoint1[matches[i].queryIdx].pt.x));
+        obs_b.push_back(pixel_t(
+                keypoint2[matches[i].trainIdx].pt.y,
+                keypoint2[matches[i].trainIdx].pt.x));
+    }
+}
+
 void ImageFeatures::compute() {
     if (!data_set) {
         throw std::runtime_error("ImageFeatures has no associated DataSet.");

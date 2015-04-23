@@ -80,10 +80,13 @@ void test_featuresgraph(string filename) {
     std::shared_ptr<DataSet> data_set(new DataSet());
     data_set->filenames.push_back(string("alinta-stockpile/DSC_5522.JPG"));
     data_set->filenames.push_back(string("alinta-stockpile/DSC_5521.JPG"));
+    data_set->load("../data");
 
     std::shared_ptr<FeaturesGraph> features(new FeaturesGraph());
+    features->data_set = data_set;
     features->number_of_matches = 15;
     features->add_edge(0, 1);
+    features->compute();
     std::ofstream ofs(filename);
     cereal::JSONOutputArchive ar(ofs);
     ar(data_set, features);
