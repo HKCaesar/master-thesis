@@ -7,6 +7,12 @@ using std::array;
 using std::string;
 using std::tuple;
 
+FeaturesGraph::FeaturesGraph() :
+    number_of_matches(0),
+    compute_scale(1.0),
+    computed(false) {
+}
+
 // Returns the list of indexes that sort the match array by distance
 vector<size_t> argsort(vector<cv::DMatch> matches) {
     // Extend the vector with indexes

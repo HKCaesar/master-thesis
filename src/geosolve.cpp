@@ -76,6 +76,18 @@ struct Project {
     }
 };
 
+void test_featuresgraph(string filename) {
+    std::shared_ptr<DataSet> data_set(new DataSet());
+    data_set->filenames.push_back(string("alinta-stockpile/DSC_5522.JPG"));
+    data_set->filenames.push_back(string("alinta-stockpile/DSC_5521.JPG"));
+
+    std::shared_ptr<FeaturesGraph> features(new FeaturesGraph());
+    features->number_of_matches = 15;
+    std::ofstream ofs(filename);
+    cereal::JSONOutputArchive ar(ofs);
+    ar(data_set, features);
+}
+
 void base_model0(string filename) {
     Project project;
 
@@ -129,6 +141,9 @@ int main(int argc, char* argv[]) {
         Project project = Project::from_file(project_filename);
         project.model->solve();
         project.to_file(project_filename);
+    }
+    else if (command == "test_featuresgraph") {
+        test_featuresgraph("test_featuresgraph.json");
     }
     else {
         std::cerr << "Invalid command: " << command << std::endl;
