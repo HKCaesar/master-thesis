@@ -154,11 +154,12 @@ def project_corners(internal, camera, pixel_size, im_shape, elevation):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: ./orthoimage.py <data_root> <model.json>")
+        print("Usage: ./orthoimage.py <data_root> <project_dir>")
         sys.exit(-1)
 
     data_root = sys.argv[1]
-    model_filename = sys.argv[2]
+    project_dir = sys.argv[2]
+    model_filename = os.path.join(project_dir, "project.json")
 
     project = Project(model_filename)
     elevation = 0
@@ -193,17 +194,8 @@ def main():
         tile.draw_observations(internal, cam_right, elevation, project, project.features.observations[:,[2,3]])
         tile.draw_obs_pair(internal, cam_left, cam_right, elevation, project, project.features.observations[:,[0,1]], project.features.observations[:,[2,3]])
 
-        io.imsave("tile{}.jpg".format(solution_number), tile.image)
+        io.imsave(os.path.join(project_dir, "tile{}.jpg".format(solution_number)), tile.image)
 
 if __name__ == "__main__":
     main()
-
-"""
-load project
-project cameras corners to get the bounds
-create a big image covering the entire region
-for each camera project it down using direct model
-option: for each keypoint down project it using inverse model and draw matches lines
-"""
-
 
