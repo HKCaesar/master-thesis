@@ -100,20 +100,21 @@ int main(int argc, char* argv[]) {
     google::InitGoogleLogging(argv[0]);
 
     if (argc < 4) {
-        std::cerr << "Usage: ./geosolve <data_dir> <command> <project.json>" << std::endl;
+        std::cerr << "Usage: ./geosolve <data_dir> <project_dir> command" << std::endl;
         return -1;
     }
 
     string data_root(argv[1]);
-    string command(argv[2]);
-    string project_filename(argv[3]);
+    string project_dir(argv[2]);
+    string command(argv[3]);
+    string project_filename = project_dir + "/project.json";
 
     if (command == "base") {
         base_model0(project_filename);
     }
     else if (command == "loadtest") {
         Project project = Project::from_file(project_filename);
-        project.to_file("loadtest-output.json");
+        project.to_file(project_dir + "/loadtest-output.json");
     }
     else if (command == "features") {
         Project project = Project::from_file(project_filename);
