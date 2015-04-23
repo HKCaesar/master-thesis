@@ -108,8 +108,6 @@ void ImageFeatures::compute() {
     vector<size_t> order = argsort(matches);
     matches = reorder(matches, order);
 
-    write_matches_image("matches.jpg", data_set->images[0], data_set->images[1], keypoint1, keypoint2, matches, maximum_number_of_matches);
-
     // Store into simple ordered by distance vector of observations
     for (size_t i = 0; i < matches.size() && i < maximum_number_of_matches; i++) {
         // query is kp1, train is kp2 (see declaration of matcher.match)
