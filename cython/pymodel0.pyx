@@ -27,6 +27,7 @@ def model0_projection_array(np.ndarray[double, ndim=1] internal, np.ndarray[doub
     assert_size(external, 6)
 
     cdef np.ndarray[double, ndim=2] result = np.zeros((point.shape[0], 2), dtype=np.float64)
+    cdef int i
     for i in range(point.shape[0]):
         model0_projection_double(&internal[0], &external[0], &point[i, 0], &result[i, 0])
     return result
@@ -50,7 +51,7 @@ def model0_inverse_array(np.ndarray[double, ndim=1] internal, np.ndarray[double,
     assert_size(external, 6)
 
     cdef np.ndarray[double, ndim=2] result = np.zeros((pix.shape[0], 3), dtype=np.float64)
-    cdef long i
+    cdef int i
     for i in range(pix.shape[0]):
         model0_image_to_world_double(&internal[0], &external[0], &pix[i, 0], &elevation, &result[i, 0], &result[i, 1])
     return result

@@ -163,6 +163,7 @@ def main():
     data_root = sys.argv[1]
     project_dir = sys.argv[2]
     model_filename = os.path.join(project_dir, "project.json")
+    solution_max = int(sys.argv[3]) if len(sys.argv) >= 4 else None
 
     project = Project(model_filename)
     elevation = 0
@@ -178,7 +179,7 @@ def main():
     os.makedirs(os.path.abspath(os.path.join(project_dir, "tile")), exist_ok=True)
     tile_dir = os.path.join(project_dir, "tile")
     number_of_solutions = len(project.model.solutions)
-    for solution_number in range(number_of_solutions):
+    for solution_number in range(number_of_solutions if solution_max is None else solution_max):
         print("{}/{}".format(solution_number+1, number_of_solutions))
         cam_left = np.array(project.model.solutions[solution_number].cameras[0], dtype=np.float64)
         cam_right = np.array(project.model.solutions[solution_number].cameras[1], dtype=np.float64)
