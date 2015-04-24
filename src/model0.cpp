@@ -4,22 +4,6 @@
 Model0::Model0() : pixel_size(0.0), rows(0.0), cols(0.0) {
 }
 
-void Model0::manual_setup(std::shared_ptr<FeaturesGraph> f, const array<double, 3>& intern, double ps, array<double, 6> left_cam, array<double, 6> right_cam) {
-    features = f;
-    internal = intern;
-    pixel_size = ps;
-
-    // Initialize initial solution from parent model
-    // (for now hard coded left-right images)
-
-    // Initialize cameras side by side
-    Solution init;
-    init.cameras.push_back(left_cam);
-    init.cameras.push_back(right_cam);
-    solutions.push_back(init);
-
-}
-
 class LogSolutionCallback : public ceres::IterationCallback {
     Model0& model;
     const Solution& working_solution;

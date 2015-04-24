@@ -13,6 +13,7 @@
 
 #define NVP(x) CEREAL_NVP(x)
 
+// Data structure for one edge of the features graph
 struct obs_pair {
     size_t cam_a, cam_b;
     std::vector<pixel_t> obs_a, obs_b;
@@ -30,6 +31,11 @@ struct obs_pair {
 };
 
 // TODO customizable algorithm, parameters, etc...
+// TODO add support for computing any feature on a zoom out input
+// see results for features 5% outlier level in report
+
+// Represents image features of a dataset (keypoints and matches)
+// As well as pairwise relationship (relative image positions, existence of overlap)
 class FeaturesGraph {
 public:
     FeaturesGraph();
@@ -52,10 +58,5 @@ public:
     std::vector<obs_pair> edges; // Edges of the features graph
 };
 
-// TODO add support for computing any feature on a zoom out input
-// see results for features 5% outlier level in report
-//
-// Represents image features of a dataset (keypoints and matches)
-// As well as pairwise relationship (relative image positions, existence of overlap)
 
 #endif

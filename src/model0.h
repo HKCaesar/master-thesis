@@ -55,7 +55,6 @@ struct Solution {
 
 struct Model0 {
     Model0();
-    void manual_setup(std::shared_ptr<FeaturesGraph> f, const array<double, 3>& internal, double ps, array<double, 6> left_cam, array<double, 6> right_cam);
     void solve();
 
     template <class Archive>

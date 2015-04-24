@@ -76,22 +76,6 @@ struct Project {
     }
 };
 
-void test_featuresgraph(string filename) {
-    std::shared_ptr<DataSet> data_set(new DataSet());
-    data_set->filenames.push_back(string("alinta-stockpile/DSC_5522.JPG"));
-    data_set->filenames.push_back(string("alinta-stockpile/DSC_5521.JPG"));
-    data_set->load("../data");
-
-    std::shared_ptr<FeaturesGraph> features(new FeaturesGraph());
-    features->data_set = data_set;
-    features->number_of_matches = 15;
-    features->add_edge(0, 1);
-    features->compute();
-    std::ofstream ofs(filename);
-    cereal::JSONOutputArchive ar(ofs);
-    ar(data_set, features);
-}
-
 void base_model0(string filename) {
     Project project;
 
@@ -105,12 +89,23 @@ void base_model0(string filename) {
     project.features->add_edge(0, 1);
 
     project.model = std::shared_ptr<Model0>(new Model0());
-    const double pixel_size = 0.0085e-3;
-    project.model->manual_setup(project.features, {48.3355e-3, 0.0093e-3, -0.0276e-3}, pixel_size, {0, 0, 269, 0, 0, 0}, {0, 0, 269, 0, 0, 0});
+
+    // Initialize initial solution from parent model
+    // (for now hard coded left-right images)
+    project.model->features = project.features;
+    project.model->internal = {48.3355e-3, 0.0093e-3, -0.0276e-3};
+    project.model->pixel_size = 0.0085e-3;
+    Solution init;
+    init.cameras.push_back({0, 0, 269, 0, 0, 0});
+    init.cameras.push_back({0, 0, 269, 0, 0, 0});
+    project.model->solutions.push_back(init);
     project.model->rows = 2832;
     project.model->cols = 4256;
 
     project.to_file(filename);
+}
+
+void command(const string& data_dir, const string& project_dir) {
 }
 
 int main(int argc, char* argv[]) {
@@ -146,9 +141,6 @@ int main(int argc, char* argv[]) {
         Project project = Project::from_file(project_filename);
         project.model->solve();
         project.to_file(project_filename);
-    }
-    else if (command == "test_featuresgraph") {
-        test_featuresgraph("test_featuresgraph.json");
     }
     else {
         std::cerr << "Invalid command: " << command << std::endl;
