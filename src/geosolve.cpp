@@ -97,7 +97,7 @@ void base_model0(const string&, const string& project_dir) {
     project.model->features = project.features;
     project.model->internal = {48.3355e-3, 0.0093e-3, -0.0276e-3};
     project.model->pixel_size = 0.0085e-3;
-    Solution init;
+    Model0::solution init;
     init.cameras.push_back({0, 0, 269, 0, 0, 0});
     init.cameras.push_back({0, 0, 269, 0, 0, 0});
     project.model->solutions.push_back(init);

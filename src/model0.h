@@ -42,18 +42,20 @@ struct Model0ReprojectionError {
     }
 };
 
-struct Solution {
-    vector<array<double, 6>> cameras; // 6 dof cameras
-    vector<array<double, 2>> terrain; // 2 dof ground points on flat terrain
+class Model0 {
+public:
 
-    template <class Archive>
-    void serialize(Archive& ar) {
-        ar(cereal::make_nvp("cameras", cameras),
-           cereal::make_nvp("terrain", terrain));
-    }
-};
+    struct solution {
+        vector<array<double, 6>> cameras; // 6 dof cameras
+        vector<array<double, 2>> terrain; // 2 dof ground points on flat terrain
 
-struct Model0 {
+        template <class Archive>
+        void serialize(Archive& ar) {
+            ar(cereal::make_nvp("cameras", cameras),
+            cereal::make_nvp("terrain", terrain));
+        }
+    };
+
     Model0();
     void solve();
 
@@ -75,7 +77,7 @@ struct Model0 {
     double rows, cols;
 
     // List of solutions, from the initial guess (or parent model) to local optimum
-    vector<Solution> solutions;
+    vector<solution> solutions;
 };
 
 #endif

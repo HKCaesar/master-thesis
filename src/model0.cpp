@@ -6,9 +6,9 @@ Model0::Model0() : pixel_size(0.0), rows(0.0), cols(0.0) {
 
 class LogSolutionCallback : public ceres::IterationCallback {
     Model0& model;
-    const Solution& working_solution;
+    const Model0::solution& working_solution;
 public:
-    LogSolutionCallback(Model0& m, const Solution& w) : model(m), working_solution(w) {}
+    LogSolutionCallback(Model0& m, const Model0::solution& w) : model(m), working_solution(w) {}
     virtual ~LogSolutionCallback() {}
     virtual ceres::CallbackReturnType operator()(const ceres::IterationSummary&) {
         model.solutions.push_back(working_solution);
@@ -48,7 +48,7 @@ void Model0::solve() {
     }
 
     // The working solution is the one holding ceres' parameter blocks
-    Solution working_solution(solutions[0]);
+    Model0::solution working_solution(solutions[0]);
 
     // Setup parameter and residual blocks
     ceres::Problem problem;
