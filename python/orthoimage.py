@@ -91,10 +91,10 @@ class FlatTile(object):
         draw = ImageDraw.Draw(im)
         sensors = sensor_types.pixel_to_sensor(observations, project.model.pixel_size, project.model.rows, project.model.cols)
         world_points = pymodel0.model0_inverse_array(internal, external, sensors, elevation)
-        size = 3
+        size = 5
         for point in world_points:
             i, j = self.world_to_image(point[:2])
-            draw.ellipse([j-size, i-size, j+size, i+size], fill="blue", outline="black")
+            draw.ellipse([j-size, i-size, j+size, i+size], fill=None, outline="red")
         self.image = np.array(im, dtype=np.uint8)
 
     def draw_obs_pair(self, internal, cam_a, cam_b, elevation, project, obs_a, obs_b):
@@ -109,7 +109,7 @@ class FlatTile(object):
         for (point_a, point_b) in zip(world_points_a, world_points_b):
             i_a, j_a = self.world_to_image(point_a[:2])
             i_b, j_b = self.world_to_image(point_b[:2])
-            draw.line([j_a, i_a, j_b, i_b], fill="green", width=3)
+            draw.line([j_a, i_a, j_b, i_b], fill="black", width=1)
         self.image = np.array(im, dtype=np.uint8)
 
     def project_camera(self, internal, external, elevation, pixel_size, image):
