@@ -18,18 +18,20 @@ def compute_residuals(project, solution_number):
     # in model0 all points are visible in all cams
     image_pixels = pymodel0.model0_projection_array(project.model.internal, project.model.solutions[solution_number].cameras[0], terrain)
     # subtract to features
-    residuals = sensor_types.sensor_to_pixel(image_pixels, project.model.pixel_size, project.model.rows, project.model.cols) - project.features.observations[:,[0,1]]
+    pix = sensor_types.sensor_to_pixel(image_pixels, project.model.pixel_size, project.model.rows, project.model.cols)
+    residuals = pix - project.features.edges[0].obs_a
     return residuals
 
 def main():
-    model_filename = sys.argv[1]
+    project_dir = sys.argv[1]
+    model_filename = os.path.join(project_dir, "project.json")
     project = Project(model_filename)
 
     residuals = compute_residuals(project, 0)
-    plt.plot(residuals[:,0], residuals[:,1], '+')
+    plt.plot(residuals[:,0], residuals[:,1], '.', color="k")
 
     residuals = compute_residuals(project, -1)
-    plt.plot(residuals[:,0], residuals[:,1], 'x')
+    plt.plot(residuals[:,0], residuals[:,1], '+', color="k")
 
     plt.show()
 
