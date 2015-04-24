@@ -14,9 +14,19 @@ class Model0(object):
         self.rows = np.array(data["rows"], dtype=np.float64)
         self.cols = np.array(data["cols"], dtype=np.float64)
 
-class ImageFeatures(object):
+class ObsPair(object):
     def __init__(self, data):
-        self.observations = np.array(data["observations"], dtype=np.float64)
+        self.cam_a = data["cam_a"]
+        self.cam_b = data["cam_b"]
+        self.obs_a = np.array(data["obs_a"], dtype=np.float64)
+        self.obs_b = np.array(data["obs_b"], dtype=np.float64)
+
+class ImageGraph(object):
+    def __init__(self, data):
+        self.number_of_matches = data["number_of_matches"]
+        self.compute_scale = data["compute_scale"]
+        self.computed = data["computed"]
+        self.edges = [ObsPair(d) for d in data["edges"]]
 
 class DataSet(object):
     def __init__(self, data):
@@ -26,6 +36,6 @@ class Project(object):
     def __init__(self, filename):
         p = json.load(open(filename))
         self.model = Model0(p["model"]["ptr_wrapper"]["data"])
-        self.features = ImageFeatures(p["features"]["ptr_wrapper"]["data"])
+        self.features = ImageGraph(p["features"]["ptr_wrapper"]["data"])
         self.data_set = DataSet(p["data_set"]["ptr_wrapper"]["data"])
 

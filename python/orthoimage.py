@@ -152,6 +152,9 @@ def project_corners(internal, camera, pixel_size, im_shape, elevation):
         [-pixel_size*cols/2, -pixel_size*rows/2]])
     return np.array([pymodel0.model0_inverse(internal, camera, pix, elevation) for pix in points_image])
 
+# TODO: profile orthoimage for performance
+# TODO: check why first two solutions are identical
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: ./orthoimage.py <data_root> <project_dir>")
@@ -190,9 +193,9 @@ def main():
         tile.draw_cam_trace(corners_right)
         tile.project_camera(internal, cam_left, elevation, pixel_size, left)
         tile.project_camera(internal, cam_right, elevation, pixel_size, right)
-        tile.draw_observations(internal, cam_left, elevation, project, project.features.observations[:,[0,1]])
-        tile.draw_observations(internal, cam_right, elevation, project, project.features.observations[:,[2,3]])
-        tile.draw_obs_pair(internal, cam_left, cam_right, elevation, project, project.features.observations[:,[0,1]], project.features.observations[:,[2,3]])
+        tile.draw_observations(internal, cam_left, elevation, project, project.features.edges[0].obs_a)
+        tile.draw_observations(internal, cam_right, elevation, project, project.features.edges[0].obs_b)
+        tile.draw_obs_pair(internal, cam_left, cam_right, elevation, project, project.features.edges[0].obs_a, project.features.edges[0].obs_b)
 
         io.imsave(os.path.join(project_dir, "tile{}.jpg".format(solution_number)), tile.image)
 
