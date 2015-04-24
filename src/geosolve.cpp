@@ -4,6 +4,8 @@
 #include <array>
 #include <memory>
 #include <string>
+#include <map>
+#include <functional>
 
 #include <cereal/archives/json.hpp>
 #include <cereal/types/vector.hpp>
@@ -76,7 +78,7 @@ struct Project {
     }
 };
 
-void base_model0(string filename) {
+void base_model0(const string&, const string& project_dir) {
     Project project;
 
     project.data_set = std::shared_ptr<DataSet>(new DataSet());
@@ -102,10 +104,30 @@ void base_model0(string filename) {
     project.model->rows = 2832;
     project.model->cols = 4256;
 
-    project.to_file(filename);
+    project.to_file(project_dir + "/project.json");
 }
 
-void command(const string& data_dir, const string& project_dir) {
+void load_test(const string&, const string& project_dir) {
+    Project project = Project::from_file(project_dir + "/project.json");
+    project.to_file(project_dir + "/loadtest-output.json");
+}
+
+void features(const string& data_dir, const string& project_dir) {
+    string project_filename = project_dir + "/project.json";
+    Project project = Project::from_file(project_filename);
+    std::cout << "Loading images" << std::endl;
+    project.data_set->load(data_dir);
+    std::cout << "Computing features" << std::endl;
+    project.features->compute();
+    project.to_file(project_filename);
+}
+
+void solve(const string&, const string& project_dir) {
+    string project_filename = project_dir + "/project.json";
+    std::cout << "Solving..." << std::endl;
+    Project project = Project::from_file(project_filename);
+    project.model->solve();
+    project.to_file(project_filename);
 }
 
 int main(int argc, char* argv[]) {
@@ -116,33 +138,20 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    string data_root(argv[1]);
+    string data_dir(argv[1]);
     string project_dir(argv[2]);
     string command(argv[3]);
-    string project_filename = project_dir + "/project.json";
 
-    if (command == "base") {
-        base_model0(project_filename);
-    }
-    else if (command == "loadtest") {
-        Project project = Project::from_file(project_filename);
-        project.to_file(project_dir + "/loadtest-output.json");
-    }
-    else if (command == "features") {
-        Project project = Project::from_file(project_filename);
-        std::cout << "Loading images" << std::endl;
-        project.data_set->load(data_root);
-        std::cout << "Computing features" << std::endl;
-        project.features->compute();
-        project.to_file(project_filename);
-    }
-    else if (command == "solve") {
-        std::cout << "Solving..." << std::endl;
-        Project project = Project::from_file(project_filename);
-        project.model->solve();
-        project.to_file(project_filename);
-    }
-    else {
+    std::map<string, std::function<void (const string&, const string&)>> commands {
+        {"base", base_model0},
+        {"loadtest", load_test},
+        {"features", features},
+        {"solve", solve}
+    };
+
+    try {
+        commands.at(command)(data_dir, project_dir);
+    } catch (std::out_of_range& err) {
         std::cerr << "Invalid command: " << command << std::endl;
     }
 }
