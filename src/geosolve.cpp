@@ -48,7 +48,7 @@ namespace cereal {
 
 struct Project {
     std::shared_ptr<DataSet> data_set;
-    std::shared_ptr<ImageFeatures> features;
+    std::shared_ptr<FeaturesGraph> features;
     std::shared_ptr<Model0> model;
 
     static Project from_file(const std::string& filename) {
@@ -99,9 +99,10 @@ void base_model0(string filename) {
     project.data_set->filenames.push_back(string("alinta-stockpile/DSC_5522.JPG"));
     project.data_set->filenames.push_back(string("alinta-stockpile/DSC_5521.JPG"));
 
-    project.features = std::shared_ptr<ImageFeatures>(new ImageFeatures());
+    project.features = std::shared_ptr<FeaturesGraph>(new FeaturesGraph());
     project.features->data_set = project.data_set;
-    project.features->maximum_number_of_matches = 10;
+    project.features->number_of_matches = 10;
+    project.features->add_edge(0, 1);
 
     project.model = std::shared_ptr<Model0>(new Model0());
     const double pixel_size = 0.0085e-3;

@@ -70,10 +70,6 @@ void write_matches_image(string path, cv::Mat image1, cv::Mat image2,
     cv::imwrite(path, img);
 }
 
-ImageFeatures::ImageFeatures() :
-    maximum_number_of_matches(0) {
-}
-
 void FeaturesGraph::compute() {
     if (!data_set) {
         throw std::runtime_error("FeaturesGraph has no associated DataSet.");
@@ -89,6 +85,7 @@ void FeaturesGraph::compute() {
     for (size_t i = 0; i < edges.size(); i++) {
         edges[i].compute(*data_set, sift, sift, number_of_matches);
     }
+    computed = true;
 }
 
 void obs_pair::compute(const DataSet& data_set,
@@ -142,59 +139,3 @@ void obs_pair::compute(const DataSet& data_set,
     }
 }
 
-void ImageFeatures::compute() {
-    if (!data_set) {
-        throw std::runtime_error("ImageFeatures has no associated DataSet.");
-    }
-    if (maximum_number_of_matches <= 0) {
-        throw std::runtime_error("ImagesFeatures has invalid maximum number of matches: " + std::to_string(maximum_number_of_matches));
-    }
-    if (data_set->isloaded == false) {
-        throw std::runtime_error("ImageFeatures.compute() called but DataSet is not loaded");
-    }
-    cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create();
-    cv::Ptr<cv::xfeatures2d::SIFT> sift = cv::xfeatures2d::SIFT::create();
-    cv::Ptr<cv::FeatureDetector> detector = sift;
-    cv::Ptr<cv::DescriptorExtractor> descriptor = sift;
-
-    // Detect and compute descriptors
-    detector->detect(data_set->images[0], keypoint1);
-    detector->detect(data_set->images[1], keypoint2);
-    descriptor->compute(data_set->images[0], keypoint1, descriptor1);
-    descriptor->compute(data_set->images[1], keypoint2, descriptor2);
-
-    if (descriptor1.empty() || descriptor2.empty()) {
-        std::cerr << "Empty descriptor!" << std::endl;
-    }
-
-    // FLANN needs type of descriptor to be CV_32F
-    if (descriptor1.type()!= CV_32F) {
-        descriptor1.convertTo(descriptor1, CV_32F);
-    }
-    if (descriptor2.type()!= CV_32F) {
-        descriptor2.convertTo(descriptor2, CV_32F);
-    }
-
-    // Match using FLANN
-    cv::FlannBasedMatcher matcher;
-    matcher.match(descriptor1, descriptor2, matches);
-
-    // Sort matches by distance
-    // Note that keypoints don't need to be reordered because the index
-    // of a match's keypoint is stored in match.queryIdx and match.trainIdx
-    // (i.e. is not given implicitly by the order of the keypoint vector)
-    vector<size_t> order = argsort(matches);
-    matches = reorder(matches, order);
-
-    // Store into simple ordered by distance vector of observations
-    for (size_t i = 0; i < matches.size() && i < maximum_number_of_matches; i++) {
-        // query is kp1, train is kp2 (see declaration of matcher.match)
-        // saved in pixel coordinates: (y, x) == (i, j)
-        observations.push_back(array<double, 4>{
-                keypoint1[matches[i].queryIdx].pt.y,
-                keypoint1[matches[i].queryIdx].pt.x,
-                keypoint2[matches[i].trainIdx].pt.y,
-                keypoint2[matches[i].trainIdx].pt.x
-            });
-    }
-}

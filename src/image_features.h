@@ -57,29 +57,5 @@ public:
 //
 // Represents image features of a dataset (keypoints and matches)
 // As well as pairwise relationship (relative image positions, existence of overlap)
-class ImageFeatures {
-public:
-    ImageFeatures();
-
-    std::shared_ptr<DataSet> data_set;
-    size_t maximum_number_of_matches;
-    // Observations in pixel coordinates (i, j)
-    std::vector<std::array<double, 4>> observations;
-    void compute();
-
-    template <class Archive>
-    void serialize(Archive& ar) {
-        ar(cereal::make_nvp("observations", observations),
-           cereal::make_nvp("maximum_number_of_matches", maximum_number_of_matches),
-           cereal::make_nvp("data_set", data_set));
-    }
-
-private:
-    std::vector<cv::KeyPoint> keypoint1;
-    std::vector<cv::KeyPoint> keypoint2;
-    cv::Mat descriptor1;
-    cv::Mat descriptor2;
-    std::vector<cv::DMatch> matches;
-};
 
 #endif

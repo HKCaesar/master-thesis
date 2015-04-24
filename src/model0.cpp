@@ -4,7 +4,7 @@
 Model0::Model0() : pixel_size(0.0), rows(0.0), cols(0.0) {
 }
 
-void Model0::manual_setup(std::shared_ptr<ImageFeatures> f, const array<double, 3>& intern, double ps, array<double, 6> left_cam, array<double, 6> right_cam) {
+void Model0::manual_setup(std::shared_ptr<FeaturesGraph> f, const array<double, 3>& intern, double ps, array<double, 6> left_cam, array<double, 6> right_cam) {
     features = f;
     internal = intern;
     pixel_size = ps;
@@ -34,26 +34,33 @@ public:
 
 void Model0::solve() {
     // Verify features have been computed
-    if (!features || features->observations.size() == 0) {
+    if (!features || features->edges.size() == 0 || features->computed == false) {
         throw std::runtime_error("Attempting to solve model0 but no observations are available");
     }
 
+    // Note: model0 only works with 2 cams, so will only consider the first edge
+    obs_pair& edge = features->edges[0];
+
     // Initialize terrain by down projecting features
-    solutions[0].terrain.resize(features->observations.size());
+    solutions[0].terrain.resize(edge.obs_a.size());
 
     // For each observation
-    for (size_t i = 0; i < features->observations.size(); i++) {
+    for (size_t i = 0; i < edge.obs_a.size(); i++) {
         // Down project to z=0 to initialize terrain
-        double dx_left, dy_left;
-        double dx_right, dy_right;
+        sensor_t sens_a = edge.obs_a[i].to_sensor(pixel_size, rows, cols);
+        sensor_t sens_b = edge.obs_b[i].to_sensor(pixel_size, rows, cols);
+
+        double dx_a, dy_a;
+        double dx_b, dy_b;
         double elevation = 0.0;
-        double pix_x = pixel_size*features->observations[i][0];
-        double pix_y = pixel_size*features->observations[i][1];
-        image_to_world(internal.data(), solutions[0].cameras[0].data(), &pix_x, &elevation, &dx_left, &dy_left);
-        image_to_world(internal.data(), solutions[0].cameras[1].data(), &pix_y, &elevation, &dx_right, &dy_right);
+
+        double pix_a[2] = {sens_a.x, sens_a.y};
+        double pix_b[2] = {sens_b.x, sens_b.y};
+        image_to_world(internal.data(), solutions[0].cameras[0].data(), pix_a, &elevation, &dx_a, &dy_a);
+        image_to_world(internal.data(), solutions[0].cameras[1].data(), pix_b, &elevation, &dx_b, &dy_b);
 
         // Take average of both projections
-        solutions[0].terrain[i] = {(dx_left + dx_right)/2.0, (dy_left + dy_right)/2.0};
+        solutions[0].terrain[i] = {(dx_a + dx_b)/2.0, (dy_a + dy_b)/2.0};
     }
 
     // The working solution is the one holding ceres' parameter blocks
@@ -61,9 +68,9 @@ void Model0::solve() {
 
     // Setup parameter and residual blocks
     ceres::Problem problem;
-    for (size_t i = 0; i < features->observations.size(); i++) {
+    for (size_t i = 0; i < edge.obs_a.size(); i++) {
         // Residual for left cam
-        sensor_t obs_left = pixel_t(features->observations[i][0], features->observations[i][1]).to_sensor(pixel_size, rows, cols);
+        sensor_t obs_left = edge.obs_a[i].to_sensor(pixel_size, rows, cols);
 		ceres::CostFunction* cost_function_left = Model0ReprojectionError::create(internal, obs_left);
 		problem.AddResidualBlock(cost_function_left,
 			NULL,
@@ -72,7 +79,7 @@ void Model0::solve() {
 			);
 
         // Residual for right cam
-        sensor_t obs_right = pixel_t(features->observations[i][2], features->observations[i][3]).to_sensor(pixel_size, rows, cols);
+        sensor_t obs_right = edge.obs_b[i].to_sensor(pixel_size, rows, cols);
 		ceres::CostFunction* cost_function_right = Model0ReprojectionError::create(internal, obs_right);
 		problem.AddResidualBlock(cost_function_right,
 			NULL,

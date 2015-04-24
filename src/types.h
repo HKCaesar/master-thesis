@@ -2,16 +2,19 @@
 #define TYPES_HPP
 
 #include <cereal/types/vector.hpp>
+#include <cereal/access.hpp>
 
 struct sensor_t;
 
 struct pixel_t {
+    pixel_t() : i(0.0), j(0.0) {}
     pixel_t(double i, double j) : i(i), j(j) {}
     sensor_t to_sensor(double pixel_size, unsigned long rows, unsigned long cols) const;
     double i, j;
 };
 
 struct sensor_t {
+    sensor_t() : x(0.0), y(0.0) {}
     sensor_t(double x, double y) : x(x), y(y) {}
     pixel_t to_pixel(double pixel_size, unsigned long rows, unsigned long cols) const;
     double x, y;

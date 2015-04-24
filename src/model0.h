@@ -55,7 +55,7 @@ struct Solution {
 
 struct Model0 {
     Model0();
-    void manual_setup(std::shared_ptr<ImageFeatures> f, const array<double, 3>& internal, double ps, array<double, 6> left_cam, array<double, 6> right_cam);
+    void manual_setup(std::shared_ptr<FeaturesGraph> f, const array<double, 3>& internal, double ps, array<double, 6> left_cam, array<double, 6> right_cam);
     void solve();
 
     template <class Archive>
@@ -68,7 +68,7 @@ struct Model0 {
            cereal::make_nvp("cols", cols));
     }
 
-    std::shared_ptr<ImageFeatures> features;
+    std::shared_ptr<FeaturesGraph> features;
 
     // 3 dof internals: {f, ppx, ppy}
     array<double, 3> internal;
