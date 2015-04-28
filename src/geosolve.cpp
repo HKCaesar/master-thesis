@@ -107,6 +107,35 @@ void base_model0(const string&, const string& project_dir) {
     project.to_file(project_dir + "/project.json");
 }
 
+void base_model0_2(const string&, const string& project_dir) {
+    Project project;
+
+    project.data_set = std::shared_ptr<DataSet>(new DataSet());
+    project.data_set->filenames.push_back(string("alinta-stockpile/DSC_5522.JPG"));
+    project.data_set->filenames.push_back(string("alinta-stockpile/DSC_5521.JPG"));
+
+    project.features = std::shared_ptr<FeaturesGraph>(new FeaturesGraph());
+    project.features->data_set = project.data_set;
+    project.features->number_of_matches = 200;
+    project.features->add_edge(0, 1);
+
+    project.model = std::shared_ptr<Model0>(new Model0());
+
+    // Initialize initial solution from parent model
+    // (for now hard coded left-right images)
+    project.model->features = project.features;
+    project.model->internal = {48.3355e-3, 0.0093e-3, -0.0276e-3};
+    project.model->pixel_size = 0.0085e-3;
+    Model0::solution init;
+    init.cameras.push_back({0, 0, 269, 0, 0, 0});
+    init.cameras.push_back({0, 0, 269, 0, 0, 0});
+    project.model->solutions.push_back(init);
+    project.model->rows = 2832;
+    project.model->cols = 4256;
+
+    project.to_file(project_dir + "/project.json");
+}
+
 void load_test(const string&, const string& project_dir) {
     Project project = Project::from_file(project_dir + "/project.json");
     project.to_file(project_dir + "/loadtest-output.json");
@@ -146,7 +175,8 @@ int main(int argc, char* argv[]) {
         {"base", base_model0},
         {"loadtest", load_test},
         {"features", features},
-        {"solve", solve}
+        {"solve", solve},
+        {"base2", base_model0_2}
     };
 
     try {

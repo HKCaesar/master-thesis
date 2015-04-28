@@ -17,6 +17,8 @@ Eigen::Matrix<T, 3, 3, Eigen::ColMajor> rotation_matrix(const T* external) {
             sin(external[3]), T(0), -cos(external[3]);
 	return Pitch * Roll * Yaw;
 }
+// Could use quaternions to implement the above function
+// Same inputs, compute Rotatino matrix using quaternions instead
 
 template <typename T>
 bool model0_projection(
