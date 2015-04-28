@@ -24,6 +24,7 @@ using std::vector;
 using std::array;
 using std::string;
 using std::shared_ptr;
+using std::placeholders;
 
 // Overload std::array for JSON to use []
 namespace cereal {
@@ -78,8 +79,7 @@ struct Project {
     }
 };
 
-// TODO factorize model0 functions and organize in model0/
-void base_model0(const string&, const string& project_dir) {
+Project base_model0_project() {
     Project project;
 
     project.data_set = std::shared_ptr<DataSet>(new DataSet());
@@ -105,65 +105,23 @@ void base_model0(const string&, const string& project_dir) {
     project.model->rows = 2832;
     project.model->cols = 4256;
 
+    return project;
+}
+
+void base_model0(const string&, const string& project_dir) {
+    Project project = base_model0_project();
     project.to_file(project_dir + "/project.json");
 }
 
 void base_model0_200(const string&, const string& project_dir) {
-    Project project;
-
-    project.data_set = std::shared_ptr<DataSet>(new DataSet());
-    project.data_set->filenames.push_back(string("alinta-stockpile/DSC_5522.JPG"));
-    project.data_set->filenames.push_back(string("alinta-stockpile/DSC_5521.JPG"));
-
-    project.features = std::shared_ptr<FeaturesGraph>(new FeaturesGraph());
-    project.features->data_set = project.data_set;
+    Project project = base_model0_project();
     project.features->number_of_matches = 200;
-    project.features->add_edge(0, 1);
-
-    project.model = std::shared_ptr<Model0>(new Model0());
-
-    // Initialize initial solution from parent model
-    // (for now hard coded left-right images)
-    project.model->features = project.features;
-    project.model->internal = {48.3355e-3, 0.0093e-3, -0.0276e-3};
-    project.model->pixel_size = 0.0085e-3;
-    Model0::solution init;
-    init.cameras.push_back({0, 0, 269, 0, 0, 0});
-    init.cameras.push_back({0, 0, 269, 0, 0, 0});
-    project.model->solutions.push_back(init);
-    project.model->rows = 2832;
-    project.model->cols = 4256;
-
     project.to_file(project_dir + "/project.json");
 }
 
-void base_model0_half(const string&, const string& project_dir) {
-    Project project;
-
-    project.data_set = std::shared_ptr<DataSet>(new DataSet());
-    project.data_set->filenames.push_back(string("alinta-stockpile/DSC_5522.JPG"));
-    project.data_set->filenames.push_back(string("alinta-stockpile/DSC_5521.JPG"));
-
-    project.features = std::shared_ptr<FeaturesGraph>(new FeaturesGraph());
-    project.features->data_set = project.data_set;
-    project.features->number_of_matches = 10;
-    project.features->compute_scale = 0.5;
-    project.features->add_edge(0, 1);
-
-    project.model = std::shared_ptr<Model0>(new Model0());
-
-    // Initialize initial solution from parent model
-    // (for now hard coded left-right images)
-    project.model->features = project.features;
-    project.model->internal = {48.3355e-3, 0.0093e-3, -0.0276e-3};
-    project.model->pixel_size = 0.0085e-3;
-    Model0::solution init;
-    init.cameras.push_back({0, 0, 269, 0, 0, 0});
-    init.cameras.push_back({0, 0, 269, 0, 0, 0});
-    project.model->solutions.push_back(init);
-    project.model->rows = 2832;
-    project.model->cols = 4256;
-
+void base_model0_scale(const string&, const string& project_dir, double compute_scale) {
+    Project project = base_model0_project();
+    project.features->compute_scale = compute_scale;
     project.to_file(project_dir + "/project.json");
 }
 
@@ -203,7 +161,8 @@ int main(int argc, char* argv[]) {
     std::map<string, std::function<void (const string&, const string&)>> commands {
         {"base_model0", base_model0},
         {"base_model0_200", base_model0_200},
-        {"base_model0_half", base_model0_half},
+        {"base_model0_half", std::bind(base_model0_scale, _1, _2, 0.5)},
+        {"base_model0_quarter", std::bind(base_model0_scale, _1, _2, 0.25)},
         {"loadtest", load_test},
         {"features", features},
         {"solve", solve}
