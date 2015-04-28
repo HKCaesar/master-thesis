@@ -70,27 +70,39 @@ void write_matches_image(string path, cv::Mat image1, cv::Mat image2,
     cv::imwrite(path, img);
 }
 
-void FeaturesGraph::compute() {
+void FeaturesGraph::compute(const std::string& data_root) {
     if (!data_set) {
         throw std::runtime_error("FeaturesGraph has no associated DataSet.");
     }
     if (number_of_matches <= 0) {
         throw std::runtime_error("FeaturesGraph has invalid maximum number of matches: " + std::to_string(number_of_matches));
     }
-    if (data_set->isloaded == false) {
-        throw std::runtime_error("FeaturesGraph.compute() called but DataSet is not loaded");
+
+    std::vector<cv::Mat> images;
+    for (auto& name : data_set->filenames) {
+        cv::Mat im = cv::imread(data_root + "/" + name);
+        if (im.data == NULL) {
+            throw std::runtime_error("Cannot load image " + name);
+        }
+        if (compute_scale != 1.0) {
+            cv::Mat resized;
+            cv::resize(im, resized, cv::Size(), compute_scale, compute_scale, cv::INTER_AREA);
+            im = resized;
+        }
+        images.push_back(im);
     }
 
     cv::Ptr<cv::xfeatures2d::SIFT> sift = cv::xfeatures2d::SIFT::create();
     for (size_t i = 0; i < edges.size(); i++) {
-        edges[i].compute(*data_set, sift, sift, number_of_matches);
+        edges[i].compute(images, sift, sift, compute_scale, number_of_matches);
     }
     computed = true;
 }
 
-void obs_pair::compute(const DataSet& data_set,
+void obs_pair::compute(const std::vector<cv::Mat>& images,
                        cv::Ptr<cv::FeatureDetector> detector,
                        cv::Ptr<cv::DescriptorExtractor> descriptor,
+                       double compute_scale,
                        size_t number_of_matches) {
     std::vector<cv::KeyPoint> keypoint1;
     std::vector<cv::KeyPoint> keypoint2;
@@ -99,10 +111,10 @@ void obs_pair::compute(const DataSet& data_set,
     std::vector<cv::DMatch> matches;
 
     // Detect and compute descriptors
-    detector->detect(data_set.images[cam_a], keypoint1);
-    detector->detect(data_set.images[cam_b], keypoint2);
-    descriptor->compute(data_set.images[cam_a], keypoint1, descriptor1);
-    descriptor->compute(data_set.images[cam_b], keypoint2, descriptor2);
+    detector->detect(images[cam_a], keypoint1);
+    detector->detect(images[cam_b], keypoint2);
+    descriptor->compute(images[cam_a], keypoint1, descriptor1);
+    descriptor->compute(images[cam_b], keypoint2, descriptor2);
 
     if (descriptor1.empty() || descriptor2.empty()) {
         std::cerr << "Empty descriptor!" << std::endl;
@@ -131,11 +143,11 @@ void obs_pair::compute(const DataSet& data_set,
         // query is kp1, train is kp2 (see declaration of matcher.match)
         // saved in pixel coordinates: opencv(y, x) == pixel_t(i, j)
         obs_a.push_back(pixel_t(
-                keypoint1[matches[i].queryIdx].pt.y,
-                keypoint1[matches[i].queryIdx].pt.x));
+                static_cast<double>(keypoint1[matches[i].queryIdx].pt.y) / compute_scale,
+                static_cast<double>(keypoint1[matches[i].queryIdx].pt.x) / compute_scale));
         obs_b.push_back(pixel_t(
-                keypoint2[matches[i].trainIdx].pt.y,
-                keypoint2[matches[i].trainIdx].pt.x));
+                static_cast<double>(keypoint2[matches[i].trainIdx].pt.y) / compute_scale,
+                static_cast<double>(keypoint2[matches[i].trainIdx].pt.x) / compute_scale));
     }
 }
 

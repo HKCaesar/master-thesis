@@ -18,9 +18,10 @@ struct obs_pair {
     size_t cam_a, cam_b;
     std::vector<pixel_t> obs_a, obs_b;
 
-    void compute(const DataSet& data_set,
+    void compute(const std::vector<cv::Mat>&,
                  cv::Ptr<cv::FeatureDetector>,
                  cv::Ptr<cv::DescriptorExtractor>,
+                 double compute_scale,
                  size_t number_of_matches);
 
     template <class Archive>
@@ -40,7 +41,7 @@ class FeaturesGraph {
 public:
     FeaturesGraph();
     void add_edge(size_t cam_a, size_t cam_b);
-    void compute();
+    void compute(const std::string& data_dir);
 
     template <class Archive>
     void serialize(Archive& ar) {
