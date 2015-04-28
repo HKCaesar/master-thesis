@@ -4,22 +4,22 @@ import sys
 import os
 import os.path
 
-def system(command):
-    if os.system(command) != 0:
-        raise RuntimeError("Command failed: {}".format(command))
+def system(cmd):
+    if os.system(cmd) != 0:
+        raise RuntimeError("Command failed: {}".format(cmd))
 
-def do(command, project_dir):
-    command = command.format(project_dir)
+def do(cmd, project_dir):
+    cmd = cmd.format(project_dir)
     log = os.path.join(project_dir, "log.txt")
-    system('printf "\n$ {}\n" 2>&1 | tee -a {}'.format(command, log))
-    system("time -p {} 2>&1 | tee -a {}".format(command, log))
+    system('printf "\n$ {}\n" 2>&1 | tee -a {}'.format(cmd, log))
+    system("time -p {} 2>&1 | tee -a {}".format(cmd, log))
 
 def build():
     system("mkdir -p build")
     system("cd build; cmake ..")
     system("make -C build/ -s")
 
-def features():
+def features_analysis():
     system("./build/features_analysis ../data ../results")
     system("./python/features_analysis.py ../results/features_analysis")
     system("./python/features_table.py ../results/features_analysis")
@@ -32,14 +32,17 @@ def geosolve():
     do("./build/geosolve ../data {} solve", project_dir)
     do("./python/orthoimage.py ../data {}", project_dir)
 
+def all():
+    build()
+    features_analysis()
+    geosolve()
+
 if __name__ == "__main__":
+    cmd = sys.argv[1] if len(sys.argv) >= 2 else "all"
+    try:
+        fct = globals()[cmd]
+        print("Running target {}".format(cmd))
+        fct()
+    except KeyError:
+        print("Command not found: {}".format(cmd))
 
-    command = sys.argv[1] if len(sys.argv) >= 2 else "all"
-
-    if command == "all":
-        build()
-        features()
-        geosolve()
-    elif command == "geosolve":
-        build()
-        geosolve()
