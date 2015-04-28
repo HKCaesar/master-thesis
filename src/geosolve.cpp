@@ -107,7 +107,7 @@ void base_model0(const string&, const string& project_dir) {
     project.to_file(project_dir + "/project.json");
 }
 
-void base_model0_2(const string&, const string& project_dir) {
+void base_model0_200(const string&, const string& project_dir) {
     Project project;
 
     project.data_set = std::shared_ptr<DataSet>(new DataSet());
@@ -172,16 +172,17 @@ int main(int argc, char* argv[]) {
     string command(argv[3]);
 
     std::map<string, std::function<void (const string&, const string&)>> commands {
-        {"base", base_model0},
+        {"base_model0", base_model0},
         {"loadtest", load_test},
         {"features", features},
         {"solve", solve},
-        {"base2", base_model0_2}
+        {"base_model0_200", base_model0_200}
     };
 
     try {
         commands.at(command)(data_dir, project_dir);
     } catch (std::out_of_range& err) {
         std::cerr << "Invalid command: " << command << std::endl;
+        return -1;
     }
 }

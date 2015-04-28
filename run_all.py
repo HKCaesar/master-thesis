@@ -8,12 +8,6 @@ def system(cmd):
     if os.system(cmd) != 0:
         raise RuntimeError("Command failed: {}".format(cmd))
 
-def do(cmd, project_dir):
-    cmd = cmd.format(project_dir)
-    log = os.path.join(project_dir, "log.txt")
-    system('printf "\n$ {}\n" 2>&1 | tee -a {}'.format(cmd, log))
-    system("time -p {} 2>&1 | tee -a {}".format(cmd, log))
-
 def build():
     system("mkdir -p build")
     system("cd build; cmake ..")
@@ -24,18 +18,37 @@ def features_analysis():
     system("./python/features_analysis.py ../results/features_analysis")
     system("./python/features_table.py ../results/features_analysis")
 
-def geosolve():
-    project_dir = "../results/geosolve/model0"
+def geosolve_dir(name):
+    "Run all of a given geosolve result directory"
+
+    project_dir = os.path.join("../results/geosolve", name)
+
+    if os.path.exists(os.path.join(project_dir, "log.txt")):
+        print("WARNING: {}/log.txt already exists.".format(name))
+
+    def do_log(cmd):
+        "Run cmd and log it to project_dir/log.txt"
+        log = os.path.join(project_dir, "log.txt")
+        system('printf "\n$ {}\n" 2>&1 | tee -a {}'.format(cmd, log))
+        system("time -p {} 2>&1 | tee -a {}".format(cmd, log))
+
     system("mkdir -p {}".format(project_dir))
-    do("./build/geosolve ../data {} base", project_dir)
-    do("./build/geosolve ../data {} features", project_dir)
-    do("./build/geosolve ../data {} solve", project_dir)
-    do("./python/orthoimage.py ../data {}", project_dir)
+    do_log("./build/geosolve ../data {} base_{}".format(project_dir, name))
+    do_log("./build/geosolve ../data {} features".format(project_dir))
+    do_log("./build/geosolve ../data {} solve".format(project_dir))
+    do_log("./python/orthoimage.py ../data {}".format(project_dir))
+
+def geosolve():
+    if len(sys.argv) < 3:
+        raise RuntimeError("geosolve command requires project_dir name")
+    build()
+    geosolve_dir(sys.argv[2])
 
 def all():
     build()
     features_analysis()
-    geosolve()
+    geosolve_all("model0")
+    geosolve_all("model0_200")
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) >= 2 else "all"
