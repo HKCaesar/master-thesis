@@ -31,12 +31,9 @@ struct obs_pair {
     }
 };
 
-// TODO customizable algorithm, parameters, etc...
-// TODO add support for computing any feature on a zoom out input
-// see results for features 5% outlier level in report
-
-// Represents image features of a dataset (keypoints and matches)
-// As well as pairwise relationship (relative image positions, existence of overlap)
+// TODO customizable algorithm, more parameters, etc...
+// The image aqcuisition graph
+// Represents which images overlap and their associated features
 class FeaturesGraph {
 public:
     FeaturesGraph();
@@ -58,6 +55,5 @@ public:
     bool computed; // true iff compute() has been performed
     std::vector<obs_pair> edges; // Edges of the features graph
 };
-
 
 #endif
