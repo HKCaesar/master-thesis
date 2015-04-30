@@ -85,6 +85,8 @@ Project base_model0_project() {
     project.data_set = std::shared_ptr<DataSet>(new DataSet());
     project.data_set->filenames.push_back(string("alinta-stockpile/DSC_5522.JPG"));
     project.data_set->filenames.push_back(string("alinta-stockpile/DSC_5521.JPG"));
+    project.data_set->rows = 2832;
+    project.data_set->cols = 4256;
 
     project.features = std::shared_ptr<FeaturesGraph>(new FeaturesGraph());
     project.features->data_set = project.data_set;
@@ -102,8 +104,6 @@ Project base_model0_project() {
     init.cameras.push_back({0, 0, 269, 0, 0, 0});
     init.cameras.push_back({0, 0, 269, 0, 0, 0});
     model->solutions.push_back(init);
-    model->rows = 2832;
-    model->cols = 4256;
 
     project.model = model;
 

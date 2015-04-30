@@ -1,9 +1,6 @@
 #include <memory>
 #include "model0.h"
 
-Model0::Model0() : pixel_size(0.0), rows(0.0), cols(0.0) {
-}
-
 void Model0::solve() {
     // Verify features have been computed
     if (!features || features->edges.size() == 0 || features->computed == false) {
@@ -15,6 +12,9 @@ void Model0::solve() {
 
     // Initialize terrain by down projecting features
     solutions[0].terrain.resize(edge.obs_a.size());
+
+    double rows = features->data_set->rows;
+    double cols = features->data_set->cols;
 
     // For each observation
     for (size_t i = 0; i < edge.obs_a.size(); i++) {

@@ -57,7 +57,6 @@ public:
         }
     };
 
-    Model0();
     virtual void solve() override;
 
     template <class Archive>
@@ -65,15 +64,12 @@ public:
         ar(cereal::base_class<Model>(this),
            cereal::make_nvp("internal", internal),
            cereal::make_nvp("pixel_size", pixel_size),
-           cereal::make_nvp("solutions", solutions),
-           cereal::make_nvp("rows", rows),
-           cereal::make_nvp("cols", cols));
+           cereal::make_nvp("solutions", solutions));
     }
 
     // 3 dof internals: {f, ppx, ppy}
     array<double, 3> internal;
-    double pixel_size;
-    double rows, cols;
+    double pixel_size = 0.0;
 
     // List of solutions, from the initial guess (or parent model) to local optimum
     vector<solution> solutions;

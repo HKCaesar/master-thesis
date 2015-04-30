@@ -8,10 +8,14 @@
 struct DataSet {
     template <class Archive>
     void serialize(Archive& ar) {
-        ar(CEREAL_NVP(filenames));
+        ar(CEREAL_NVP(filenames),
+           CEREAL_NVP(rows),
+           CEREAL_NVP(cols));
     }
 
     std::vector<std::string> filenames;
+    double rows = 0;
+    double cols = 0;
 };
 
 #endif
