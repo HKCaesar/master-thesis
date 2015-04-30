@@ -4,22 +4,48 @@
 #include "ceres/ceres.h"
 #include "internal.h"
 
-template <typename T>
-Eigen::Matrix<T, 3, 3, Eigen::ColMajor> rotation_matrix(const T* external) {
-    Eigen::Matrix<T, 3, 3, Eigen::ColMajor> Yaw, Pitch, Roll;
-    Yaw << cos(external[5]), -sin(external[5]), T(0),
-           sin(external[5]), cos(external[5]), T(0),
-           T(0), T(0), T(1);
-    Pitch << T(1), T(0), T(0),
-             T(0), cos(external[4]), sin(external[4]),
-             T(0), -sin(external[4]), cos(external[4]);
-    Roll << -cos(external[3]), T(0), -sin(external[3]),
-            T(0), T(1), T(0),
-            sin(external[3]), T(0), -cos(external[3]);
-	return Pitch * Roll * Yaw;
-}
 // Could use quaternions to implement the above function
 // Same inputs, compute Rotatino matrix using quaternions instead
+template <typename T>
+Eigen::Matrix<T, 3, 3, Eigen::ColMajor> rotation_matrix_3(const T* ext) {
+    Eigen::Matrix<T, 3, 3, Eigen::ColMajor> Yaw, Pitch, Roll;
+
+    Yaw   <<  cos(ext[5]), -sin(ext[5]),         T(0),
+              sin(ext[5]),  cos(ext[5]),         T(0),
+                     T(0),         T(0),         T(1);
+
+    Pitch <<         T(1),         T(0),         T(0),
+                     T(0),  cos(ext[4]),  sin(ext[4]),
+                     T(0), -sin(ext[4]),  cos(ext[4]);
+
+    Roll  << -cos(ext[3]),         T(0), -sin(ext[3]),
+                     T(0),         T(1),         T(0),
+              sin(ext[3]),         T(0), -cos(ext[3]);
+
+	return Pitch*Roll*Yaw;
+}
+
+template <typename T>
+Eigen::Matrix<T, 4, 4, Eigen::ColMajor> rotation_matrix_4(const T* ext) {
+    Eigen::Matrix<T, 4, 4, Eigen::ColMajor> Yaw, Pitch, Roll;
+
+    Yaw   <<  cos(ext[5]), -sin(ext[5]),         T(0), T(0),
+              sin(ext[5]),  cos(ext[5]),         T(0), T(0),
+                     T(0),         T(0),         T(1), T(0),
+                     T(0),         T(0),         T(0), T(1);
+
+    Pitch <<         T(1),         T(0),         T(0), T(0),
+                     T(0),  cos(ext[4]),  sin(ext[4]), T(0),
+                     T(0), -sin(ext[4]),  cos(ext[4]), T(0),
+                     T(0),         T(0),         T(0), T(1);
+
+    Roll  << -cos(ext[3]),         T(0), -sin(ext[3]), T(0),
+                     T(0),         T(1),         T(0), T(0),
+              sin(ext[3]),         T(0), -cos(ext[3]), T(0),
+                     T(0),         T(0),         T(0), T(1);
+
+    return Pitch*Roll*Yaw;
+}
 
 template <typename T>
 bool model0_projection(
@@ -28,7 +54,7 @@ bool model0_projection(
         const T* const point,
         T* residuals) {
 
-    Eigen::Matrix<T, 3, 3, Eigen::ColMajor> R = rotation_matrix(external);
+    Eigen::Matrix<T, 3, 3, Eigen::ColMajor> R = rotation_matrix_3(external);
 
     // Translate and rotate to camera frame
     Eigen::Matrix<T, 3, 1, Eigen::ColMajor> Q;
@@ -60,39 +86,27 @@ void image_to_world(const T* const internal,
                     const T* elevation,
                     T* dx, T* dy) {
     // Rotation matrices
-    Eigen::Matrix<T, 4, 4, Eigen::ColMajor> Yaw1, Pitch1, Roll1, T1;
+    Eigen::Matrix<T, 4, 4, Eigen::ColMajor> T1;
     Eigen::Matrix<T, 4, 3, Eigen::ColMajor> B;
     Eigen::Matrix<T, 3, 4, Eigen::ColMajor> P;
-    Yaw1 << cos(external[5]), -sin(external[5]), T(0), T(0),
-        sin(external[5]), cos(external[5]), T(0), T(0),
-        T(0), T(0), T(1), T(0),
-        T(0), T(0), T(0), T(1);
 
-    Pitch1 << T(1), T(0), T(0), T(0),
-        T(0), cos(external[4]), sin(external[4]), T(0),
-        T(0), -sin(external[4]), cos(external[4]), T(0),
-        T(0), T(0), T(0), T(1);
+    Eigen::Matrix<T, 4, 4, Eigen::ColMajor> R1 = rotation_matrix_4(external);
 
-    Roll1 << -cos(external[3]), T(0), -sin(external[3]), T(0),
-        T(0), T(1), T(0), T(0),
-        sin(external[3]), T(0), -cos(external[3]), T(0),
-        T(0), T(0), T(0), T(1);
+    T1 << T(1), T(0), T( 0), -external[0],
+          T(0), T(1), T( 0), -external[1],
+          T(0), T(0), T(-1),  external[2],
+          T(0), T(0), T( 0),         T(1);
 
-    Eigen::Matrix<T, 4, 4, Eigen::ColMajor> R1 = Pitch1 * Roll1 * Yaw1;
-    T1 << T(1), T(0), T(0), -external[0],
-        T(0), T(1), T(0), -external[1],
-        T(0), T(0), T(-1), external[2],
-        T(0), T(0), T(0), T(1);
-    B << T(1), T(0), T(0),
-        T(0), T(1), T(0),
-        T(0), T(0), elevation[0],
-        T(0), T(0), T(1);
+    B  << T(1), T(0),         T(0),
+          T(0), T(1),         T(0),
+          T(0), T(0), elevation[0],
+          T(0), T(0),         T(1);
 
-    P << focal_length(internal), T(0), pp_x(internal), T(0),
-         T(0), focal_length(internal), pp_y(internal), T(0),
-         T(0), T(0), T(1), T(0);
+    P  << focal_length(internal),                   T(0), pp_x(internal), T(0),
+                            T(0), focal_length(internal), pp_y(internal), T(0),
+                            T(0),                   T(0),           T(1), T(0);
 
-    Eigen::Matrix<T, 3, 3, Eigen::ColMajor> A = P * R1* T1*B;
+    Eigen::Matrix<T, 3, 3, Eigen::ColMajor> A = P * R1 * T1 * B;
     Eigen::Matrix<T, 3, 1, Eigen::ColMajor> b;
     b << T(pix[0]), T(pix[1]), T(1);
     Eigen::FullPivLU< Eigen::Matrix<T, 3, 3, Eigen::ColMajor> >  lu(A);
