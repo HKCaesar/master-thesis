@@ -62,15 +62,13 @@ public:
 
     template <class Archive>
     void serialize(Archive& ar) {
-        ar(cereal::make_nvp("features", features),
+        ar(cereal::base_class<Model>(this),
            cereal::make_nvp("internal", internal),
            cereal::make_nvp("pixel_size", pixel_size),
            cereal::make_nvp("solutions", solutions),
            cereal::make_nvp("rows", rows),
            cereal::make_nvp("cols", cols));
     }
-
-    std::shared_ptr<FeaturesGraph> features;
 
     // 3 dof internals: {f, ppx, ppy}
     array<double, 3> internal;
