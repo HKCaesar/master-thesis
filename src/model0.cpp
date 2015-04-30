@@ -4,18 +4,6 @@
 Model0::Model0() : pixel_size(0.0), rows(0.0), cols(0.0) {
 }
 
-class LogSolutionCallback : public ceres::IterationCallback {
-    Model0& model;
-    const Model0::solution& working_solution;
-public:
-    LogSolutionCallback(Model0& m, const Model0::solution& w) : model(m), working_solution(w) {}
-    virtual ~LogSolutionCallback() {}
-    virtual ceres::CallbackReturnType operator()(const ceres::IterationSummary&) {
-        model.solutions.push_back(working_solution);
-        return ceres::SOLVER_CONTINUE;
-    }
-};
-
 void Model0::solve() {
     // Verify features have been computed
     if (!features || features->edges.size() == 0 || features->computed == false) {
@@ -83,7 +71,7 @@ void Model0::solve() {
 
     // Enable logging of solution at every step
     options.update_state_every_iteration = true;
-    std::shared_ptr<LogSolutionCallback> solution_logger(new LogSolutionCallback(*this, working_solution));
+    std::shared_ptr<LogSolutionCallback<Model0, Model0::solution>> solution_logger(new LogSolutionCallback<Model0, Model0::solution>(*this, working_solution));
     options.callbacks.push_back(solution_logger.get());
 
     ceres::Solver::Summary summary;
