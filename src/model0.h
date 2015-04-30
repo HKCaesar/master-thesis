@@ -9,6 +9,7 @@
 #include "image_features.h"
 #include "camera_models.h"
 #include "types.h"
+#include "model.h"
 
 using std::vector;
 using std::array;
@@ -42,7 +43,7 @@ struct Model0ReprojectionError {
     }
 };
 
-class Model0 {
+class Model0 : public Model {
 public:
 
     struct solution {
@@ -57,7 +58,7 @@ public:
     };
 
     Model0();
-    void solve();
+    virtual void solve() override;
 
     template <class Archive>
     void serialize(Archive& ar) {
@@ -79,5 +80,7 @@ public:
     // List of solutions, from the initial guess (or parent model) to local optimum
     vector<solution> solutions;
 };
+
+CEREAL_REGISTER_TYPE(Model0);
 
 #endif

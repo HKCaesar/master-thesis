@@ -24,7 +24,7 @@ using std::vector;
 using std::array;
 using std::string;
 using std::shared_ptr;
-using std::placeholders;
+using namespace std::placeholders;
 
 // Overload std::array for JSON to use []
 namespace cereal {
@@ -52,7 +52,7 @@ namespace cereal {
 struct Project {
     std::shared_ptr<DataSet> data_set;
     std::shared_ptr<FeaturesGraph> features;
-    std::shared_ptr<Model0> model;
+    std::shared_ptr<Model> model;
 
     static Project from_file(const std::string& filename) {
         Project p;
@@ -91,19 +91,21 @@ Project base_model0_project() {
     project.features->number_of_matches = 10;
     project.features->add_edge(0, 1);
 
-    project.model = std::shared_ptr<Model0>(new Model0());
+    std::shared_ptr<Model0> model(new Model0());
 
     // Initialize initial solution from parent model
     // (for now hard coded left-right images)
-    project.model->features = project.features;
-    project.model->internal = {48.3355e-3, 0.0093e-3, -0.0276e-3};
-    project.model->pixel_size = 0.0085e-3;
+    model->features = project.features;
+    model->internal = {48.3355e-3, 0.0093e-3, -0.0276e-3};
+    model->pixel_size = 0.0085e-3;
     Model0::solution init;
     init.cameras.push_back({0, 0, 269, 0, 0, 0});
     init.cameras.push_back({0, 0, 269, 0, 0, 0});
-    project.model->solutions.push_back(init);
-    project.model->rows = 2832;
-    project.model->cols = 4256;
+    model->solutions.push_back(init);
+    model->rows = 2832;
+    model->cols = 4256;
+
+    project.model = model;
 
     return project;
 }
