@@ -5,11 +5,13 @@
 #include <vector>
 #include <array>
 #include "ceres/ceres.h"
+#include <cereal/types/array.hpp>
 #include "data_set.h"
 #include "image_features.h"
 #include "camera_models.h"
 #include "types.h"
 #include "model.h"
+#include "internal.h"
 
 using std::vector;
 using std::array;
@@ -19,18 +21,18 @@ using std::array;
 // Fixed internals and no distortion
 
 struct Model0ReprojectionError {
-    const array<double, 3> internal;
+    const internal_t internal;
     const sensor_t observed;
 
 	// Factory to hide the construction of the CostFunction object
-	static ceres::CostFunction* create(const array<double, 3> internal, const sensor_t observed) {
+	static ceres::CostFunction* create(const internal_t internal, const sensor_t observed) {
 		// template parameters indicate the numbers of:
         // residuals, params in block 1, 2, 3...
 		return (new ceres::AutoDiffCostFunction<Model0ReprojectionError, 2, 6, 2>(
 			new Model0ReprojectionError(internal, observed)));
 	}
 
-	Model0ReprojectionError(const array<double, 3> internal, const sensor_t observed)
+	Model0ReprojectionError(const internal_t internal, const sensor_t observed)
 		: internal(internal), observed(observed) {}
 
 	template <typename T>
@@ -45,7 +47,6 @@ struct Model0ReprojectionError {
 
 class Model0 : public Model {
 public:
-
     struct solution {
         vector<array<double, 6>> cameras; // 6 dof cameras
         vector<array<double, 2>> terrain; // 2 dof ground points on flat terrain
@@ -67,8 +68,7 @@ public:
            cereal::make_nvp("solutions", solutions));
     }
 
-    // 3 dof internals: {f, ppx, ppy}
-    array<double, 3> internal;
+    internal_t internal;
     double pixel_size = 0.0;
 
     // List of solutions, from the initial guess (or parent model) to local optimum

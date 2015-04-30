@@ -2,6 +2,7 @@
 #define CAMERA_MODELS_H
 
 #include "ceres/ceres.h"
+#include "internal.h"
 
 template <typename T>
 Eigen::Matrix<T, 3, 3, Eigen::ColMajor> rotation_matrix(const T* external) {
@@ -39,8 +40,8 @@ bool model0_projection(
     T y = Q(1, 0) / Q(2, 0);
 
     // Apply focal length and principal point
-    residuals[0] = internal[0] * x + internal[1];
-    residuals[1] = internal[0] * y + internal[2];
+    residuals[0] = focal_length(internal) * x + pp_x(internal);
+    residuals[1] = focal_length(internal) * y + pp_y(internal);
 
     return true;
 }
@@ -87,9 +88,9 @@ void image_to_world(const T* const internal,
         T(0), T(0), elevation[0],
         T(0), T(0), T(1);
 
-    P << internal[0], T(0), internal[1], T(0),
-        T(0), internal[0], internal[2], T(0),
-        T(0), T(0), T(1), T(0);
+    P << focal_length(internal), T(0), pp_x(internal), T(0),
+         T(0), focal_length(internal), pp_y(internal), T(0),
+         T(0), T(0), T(1), T(0);
 
     Eigen::Matrix<T, 3, 3, Eigen::ColMajor> A = P * R1* T1*B;
     Eigen::Matrix<T, 3, 1, Eigen::ColMajor> b;
