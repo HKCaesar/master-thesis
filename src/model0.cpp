@@ -71,7 +71,8 @@ void Model0::solve() {
 
     // Enable logging of solution at every step
     options.update_state_every_iteration = true;
-    std::shared_ptr<LogSolutionCallback<Model0, Model0::solution>> solution_logger(new LogSolutionCallback<Model0, Model0::solution>(*this, working_solution));
+    std::unique_ptr<LogSolutionCallback<Model0::solution>> solution_logger(
+        new LogSolutionCallback<Model0::solution>(solutions, working_solution));
     options.callbacks.push_back(solution_logger.get());
 
     ceres::Solver::Summary summary;

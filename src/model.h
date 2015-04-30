@@ -10,18 +10,17 @@ public:
     virtual ~Model() {}
 };
 
-template <typename ModelType, typename SolutionType>
+template <typename SolutionType>
 class LogSolutionCallback : public ceres::IterationCallback {
-    ModelType& model;
+    std::vector<SolutionType>& solutions;
     const SolutionType& working_solution;
 public:
-    LogSolutionCallback(ModelType& m, const SolutionType& w) : model(m), working_solution(w) {}
+    LogSolutionCallback(std::vector<SolutionType>& v, const SolutionType& sol) : solutions(v), working_solution(sol) {}
     virtual ~LogSolutionCallback() {}
     virtual ceres::CallbackReturnType operator()(const ceres::IterationSummary&) {
-        model.solutions.push_back(working_solution);
+        solutions.push_back(working_solution);
         return ceres::SOLVER_CONTINUE;
     }
 };
-
 
 #endif
