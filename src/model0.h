@@ -54,7 +54,7 @@ public:
         template <class Archive>
         void serialize(Archive& ar) {
             ar(cereal::make_nvp("cameras", cameras),
-            cereal::make_nvp("terrain", terrain));
+               cereal::make_nvp("terrain", terrain));
         }
     };
 
