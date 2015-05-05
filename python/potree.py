@@ -13,14 +13,13 @@ def system(cmd):
 
 view_dtm_script = """
 #!/bin/bash 
-
 i3-msg workspace 2
 firefox -new-window http://0.0.0.0:8000/potree/examples/dtm.xyz.html
 konsole --nofork -e /bin/bash -c "python3 -m http.server"
 """
 
 if __name__ == "__main__":
-    dtmdir = sys.argv[1] if len(sys.argv) >= 2 else "."
+    dtmdir = sys.argv[1]
 
     if not os.path.exists(join(dtmdir, "dtm.xyz")):
         print("Error, {} does not exist.".format(join(dtmdir, "dtm.xyz")))
@@ -28,8 +27,8 @@ if __name__ == "__main__":
 
     # Call potree converter
     potree_dir = "../PotreeConverter/build/PotreeConverter"
-    system("cd {}; ./PotreeConverter {} -o {} -p --color-range 0 255 --input-format xyzrgb"
-            .format(potree_dir, os.path.abspath(join(dtmdir, "dtm.xyz")), os.path.abspath(join(dtmdir, "potree"))))
+    # system("cd {}; ./PotreeConverter {} -o {} -p --color-range 0 255 --input-format xyzrgb"
+    #         .format(potree_dir, os.path.abspath(join(dtmdir, "dtm.xyz")), os.path.abspath(join(dtmdir, "potree"))))
 
     # Copy potree directories
     system("cp -r ../potree/build {}".format(join(dtmdir, "potree")))
