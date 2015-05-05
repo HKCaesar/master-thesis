@@ -16,8 +16,7 @@ view_dtm_script = """
 
 i3-msg workspace 2
 firefox -new-window http://0.0.0.0:8000/potree/examples/dtm.xyz.html
-python3 -m http.server
-
+konsole --nofork -e /bin/bash -c "python3 -m http.server"
 """
 
 if __name__ == "__main__":
