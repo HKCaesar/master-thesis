@@ -176,8 +176,8 @@ def main():
 
     # Down project all cameras corners to get the area
 
-    os.makedirs(os.path.abspath(os.path.join(project_dir, "tile")), exist_ok=True)
-    tile_dir = os.path.join(project_dir, "tile")
+    tile_dir = os.path.abspath(os.path.join(project_dir, "orthoimage"))
+    os.makedirs(tile_dir, exist_ok=True)
     number_of_solutions = len(project.model.solutions)
     for solution_number in range(number_of_solutions if solution_max is None else solution_max):
         print("{}/{}".format(solution_number+1, number_of_solutions))
@@ -200,7 +200,7 @@ def main():
         tile.draw_observations(internal, cam_right, elevation, project, project.features.edges[0].obs_b)
         tile.draw_obs_pair(internal, cam_left, cam_right, elevation, project, project.features.edges[0].obs_a, project.features.edges[0].obs_b)
 
-        io.imsave(os.path.join(tile_dir, "tile{}.jpg".format(solution_number)), tile.image)
+        io.imsave(os.path.join(tile_dir, "iteration{}.jpg".format(solution_number)), tile.image)
 
 if __name__ == "__main__":
     main()
