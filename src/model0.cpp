@@ -39,7 +39,6 @@ void Model0::solve() {
     Model0::solution working_solution(solutions[0]);
 
     // Setup parameter and residual blocks
-    ceres::Problem problem;
     for (size_t i = 0; i < edge.obs_a.size(); i++) {
         // Residual for left cam
         sensor_t obs_left = edge.obs_a[i].to_sensor(pixel_size, rows, cols);
@@ -62,18 +61,7 @@ void Model0::solve() {
 
     problem.SetParameterBlockConstant(working_solution.cameras[0].data());
 
-    ceres::Solver::Options options;
-    options.linear_solver_type = ceres::DENSE_SCHUR;
-    options.minimizer_progress_to_stdout = true;
-    options.max_linear_solver_iterations = 3;
-    options.max_num_iterations = 30;
-    options.num_threads = 1;
-
-    // Enable logging of solution at every step
-    options.update_state_every_iteration = true;
-    std::unique_ptr<LogSolutionCallback<Model0::solution>> solution_logger(
-        new LogSolutionCallback<Model0::solution>(solutions, working_solution));
-    options.callbacks.push_back(solution_logger.get());
+    enable_logging(solutions, working_solution);
 
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);

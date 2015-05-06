@@ -2,6 +2,7 @@
 #define MODEL_H
 
 #include <utility>
+#include "ceres/ceres.h"
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/polymorphic.hpp>
 #include <cereal/types/memory.hpp>
@@ -29,21 +30,6 @@ struct CostFunction {
     }
 };
 
-// Base class for models
-// Must overwrite solve()
-class Model {
-public:
-    virtual void solve() = 0;
-    virtual ~Model() {}
-
-    template <class Archive>
-    void serialize(Archive& ar) {
-        ar(cereal::make_nvp("features", features));
-    }
-
-    std::shared_ptr<FeaturesGraph> features;
-};
-
 // Utility class to enable logging of solutions at each sovler step
 template <typename SolutionType>
 class LogSolutionCallback : public ceres::IterationCallback {
@@ -56,6 +42,42 @@ public:
         solutions.push_back(working_solution);
         return ceres::SOLVER_CONTINUE;
     }
+};
+
+// Base class for models
+// Must overwrite solve()
+class Model {
+public:
+
+    Model() {
+        // Solver options common to all models
+        options.linear_solver_type = ceres::DENSE_SCHUR;
+        options.minimizer_progress_to_stdout = true;
+        options.max_linear_solver_iterations = 3;
+        options.max_num_iterations = 30;
+        options.num_threads = 1;
+    }
+
+    virtual void solve() = 0;
+    virtual ~Model() {}
+
+    // Enable logging of solutions at every step
+    template <typename T>
+    void enable_logging(std::vector<T>& solutions, const T& working_solution) {
+        options.update_state_every_iteration = true;
+        solution_logger.reset(new LogSolutionCallback<T>(solutions, working_solution));
+        options.callbacks.push_back(solution_logger.get());
+    }
+
+    template <class Archive>
+    void serialize(Archive& ar) {
+        ar(cereal::make_nvp("features", features));
+    }
+
+    std::shared_ptr<FeaturesGraph> features;
+    std::unique_ptr<ceres::IterationCallback> solution_logger;
+    ceres::Problem problem;
+    ceres::Solver::Options options;
 };
 
 #endif
