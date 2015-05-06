@@ -89,7 +89,7 @@ class FlatTile(object):
     def draw_observations(self, internal, external, elevation, project, observations):
         im = Image.fromarray(self.image)
         draw = ImageDraw.Draw(im)
-        sensors = sensor_types.pixel_to_sensor(observations, project.model.pixel_size, project.model.rows, project.model.cols)
+        sensors = sensor_types.pixel_to_sensor(observations, project.model.pixel_size, project.data_set.rows, project.data_set.cols)
         world_points = pymodel0.model0_inverse_array(internal, external, sensors, elevation)
         size = 5
         for point in world_points:
@@ -100,8 +100,8 @@ class FlatTile(object):
     def draw_obs_pair(self, internal, cam_a, cam_b, elevation, project, obs_a, obs_b):
         im = Image.fromarray(self.image)
         draw = ImageDraw.Draw(im)
-        sensors_a = sensor_types.pixel_to_sensor(obs_a, project.model.pixel_size, project.model.rows, project.model.cols)
-        sensors_b = sensor_types.pixel_to_sensor(obs_b, project.model.pixel_size, project.model.rows, project.model.cols)
+        sensors_a = sensor_types.pixel_to_sensor(obs_a, project.model.pixel_size, project.data_set.rows, project.data_set.cols)
+        sensors_b = sensor_types.pixel_to_sensor(obs_b, project.model.pixel_size, project.data_set.rows, project.data_set.cols)
         world_points_a = pymodel0.model0_inverse_array(internal, cam_a, sensors_a, elevation)
         world_points_b = pymodel0.model0_inverse_array(internal, cam_b, sensors_b, elevation)
 

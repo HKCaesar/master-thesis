@@ -11,8 +11,6 @@ class Model0(object):
         self.internal = np.array(data["internal"], dtype=np.float64)
         self.pixel_size = np.array(data["pixel_size"], dtype=np.float64)
         self.solutions = [Solution(sol) for sol in data["solutions"]]
-        self.rows = np.array(data["rows"], dtype=np.float64)
-        self.cols = np.array(data["cols"], dtype=np.float64)
 
 class ObsPair(object):
     def __init__(self, data):
@@ -31,6 +29,8 @@ class ImageGraph(object):
 class DataSet(object):
     def __init__(self, data):
         self.filenames = data["filenames"]
+        self.rows = np.array(data["rows"], dtype=np.float64)
+        self.cols = np.array(data["cols"], dtype=np.float64)
 
 class Project(object):
     def __init__(self, filename):
