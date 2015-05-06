@@ -25,16 +25,15 @@ if __name__ == "__main__":
         print("Error, {} does not exist.".format(join(dtmdir, "dtm.xyz")))
         sys.exit(-1)
 
-    # Call potree converter
     potree_dir = "../PotreeConverter/build/PotreeConverter"
-    # system("cd {}; ./PotreeConverter {} -o {} -p --color-range 0 255 --input-format xyzrgb"
-    #         .format(potree_dir, os.path.abspath(join(dtmdir, "dtm.xyz")), os.path.abspath(join(dtmdir, "potree"))))
 
     # Copy potree directories
-    system("cp -r ../potree/build {}".format(join(dtmdir, "potree")))
-    system("cp -r ../potree/resources {}".format(join(dtmdir, "potree")))
-    system("cp -r ../potree/libs {}".format(join(dtmdir, "potree")))
+    system("mkdir -p {}".format(join(dtmdir, "potree")))
+    system("cp -r ../potree/build -t {}".format(join(dtmdir, "potree")))
+    system("cp -r ../potree/resources -t {}".format(join(dtmdir, "potree")))
+    system("cp -r ../potree/libs -t {}".format(join(dtmdir, "potree")))
 
+    # Call potree converter
     system("cd {}; ./PotreeConverter {} -o {} -p --color-range 0 255 --input-format xyzrgb"
             .format(potree_dir, os.path.abspath(join(dtmdir, "dtm.xyz")), os.path.abspath(join(dtmdir, "potree"))))
 
@@ -45,6 +44,3 @@ if __name__ == "__main__":
 
     # chmod +x
     os.chmod(view_dtm_file, os.stat(view_dtm_file).st_mode | stat.S_IEXEC)
-
-
-
