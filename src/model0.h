@@ -20,17 +20,9 @@ using std::array;
 // 2D ground points (z=0)
 // Fixed internals and no distortion
 
-struct Model0ReprojectionError {
+struct Model0ReprojectionError : CostFunction<Model0ReprojectionError, 2, 6, 2> {
     const internal_t internal;
     const sensor_t observed;
-
-	// Factory to hide the construction of the CostFunction object
-	static ceres::CostFunction* create(const internal_t internal, const sensor_t observed) {
-		// template parameters indicate the numbers of:
-        // residuals, params in block 1, 2, 3...
-		return (new ceres::AutoDiffCostFunction<Model0ReprojectionError, 2, 6, 2>(
-			new Model0ReprojectionError(internal, observed)));
-	}
 
 	Model0ReprojectionError(const internal_t internal, const sensor_t observed)
 		: internal(internal), observed(observed) {}

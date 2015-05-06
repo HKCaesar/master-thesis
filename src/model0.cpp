@@ -43,7 +43,7 @@ void Model0::solve() {
     for (size_t i = 0; i < edge.obs_a.size(); i++) {
         // Residual for left cam
         sensor_t obs_left = edge.obs_a[i].to_sensor(pixel_size, rows, cols);
-		ceres::CostFunction* cost_function_left = Model0ReprojectionError::create(internal, obs_left);
+		ceres::CostFunction* cost_function_left = Model0ReprojectionError::make(internal, obs_left);
 		problem.AddResidualBlock(cost_function_left,
 			NULL,
 			working_solution.cameras[0].data(),
@@ -52,7 +52,7 @@ void Model0::solve() {
 
         // Residual for right cam
         sensor_t obs_right = edge.obs_b[i].to_sensor(pixel_size, rows, cols);
-		ceres::CostFunction* cost_function_right = Model0ReprojectionError::create(internal, obs_right);
+		ceres::CostFunction* cost_function_right = Model0ReprojectionError::make(internal, obs_right);
 		problem.AddResidualBlock(cost_function_right,
 			NULL,
 			working_solution.cameras[1].data(),

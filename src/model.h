@@ -1,11 +1,36 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include <utility>
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/polymorphic.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/archives/json.hpp>
 
+// Base class for models' cost functions
+// Provides a factory to hide the construction of the autodiff'ed CostFunction object
+template <typename CostFunctor,
+       int kNumResiduals,  // Number of residuals, or ceres::DYNAMIC.
+       int N0,       // Number of parameters in block 0.
+       int N1 = 0,   // Number of parameters in block 1.
+       int N2 = 0,   // Number of parameters in block 2.
+       int N3 = 0,   // Number of parameters in block 3.
+       int N4 = 0,   // Number of parameters in block 4.
+       int N5 = 0,   // Number of parameters in block 5.
+       int N6 = 0,   // Number of parameters in block 6.
+       int N7 = 0,   // Number of parameters in block 7.
+       int N8 = 0,   // Number of parameters in block 8.
+       int N9 = 0>   // Number of parameters in block 9.
+struct CostFunction {
+    template <typename... Args>
+    static ceres::CostFunction* make(Args&&... args) {
+        return new ceres::AutoDiffCostFunction<CostFunctor, kNumResiduals, N0, N1, N2, N3, N4, N5, N6, N7, N8, N9>
+            (new CostFunctor(std::forward<Args>(args)...));
+    }
+};
+
+// Base class for models
+// Must overwrite solve()
 class Model {
 public:
     virtual void solve() = 0;
@@ -19,6 +44,7 @@ public:
     std::shared_ptr<FeaturesGraph> features;
 };
 
+// Utility class to enable logging of solutions at each sovler step
 template <typename SolutionType>
 class LogSolutionCallback : public ceres::IterationCallback {
     std::vector<SolutionType>& solutions;
