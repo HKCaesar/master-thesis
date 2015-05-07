@@ -6,21 +6,23 @@
 
 // Could use quaternions to implement the above function
 // Same inputs, compute Rotatino matrix using quaternions instead
-template <typename T>
-Eigen::Matrix<T, 3, 3, Eigen::ColMajor> rotation_matrix_3(const T* ext) {
+// This uses two template parameters to allow the external pointer to be double* explicitly,
+// in case it is not a parameter, and therefore does not need to be differentiated over by Jets
+template <typename T, typename ExternalT>
+Eigen::Matrix<T, 3, 3, Eigen::ColMajor> rotation_matrix_3(const ExternalT* ext) {
     Eigen::Matrix<T, 3, 3, Eigen::ColMajor> Yaw, Pitch, Roll;
 
-    Yaw   <<  cos(ext[5]), -sin(ext[5]),         T(0),
-              sin(ext[5]),  cos(ext[5]),         T(0),
-                     T(0),         T(0),         T(1);
+    Yaw   <<  cos(T(ext[5])), -sin(T(ext[5])),            T(0),
+              sin(T(ext[5])),  cos(T(ext[5])),            T(0),
+                        T(0),            T(0),            T(1);
 
-    Pitch <<         T(1),         T(0),         T(0),
-                     T(0),  cos(ext[4]),  sin(ext[4]),
-                     T(0), -sin(ext[4]),  cos(ext[4]);
+    Pitch <<            T(1),            T(0),            T(0),
+                        T(0),  cos(T(ext[4])),  sin(T(ext[4])),
+                        T(0), -sin(T(ext[4])),  cos(T(ext[4]));
 
-    Roll  << -cos(ext[3]),         T(0), -sin(ext[3]),
-                     T(0),         T(1),         T(0),
-              sin(ext[3]),         T(0), -cos(ext[3]);
+    Roll  << -cos(T(ext[3])),            T(0), -sin(T(ext[3])),
+                        T(0),            T(1),            T(0),
+              sin(T(ext[3])),            T(0), -cos(T(ext[3]));
 
 	return Pitch*Roll*Yaw;
 }
@@ -47,18 +49,23 @@ Eigen::Matrix<T, 4, 4, Eigen::ColMajor> rotation_matrix_4(const T* ext) {
     return Pitch*Roll*Yaw;
 }
 
-template <typename T>
+// This uses two template parameters to allow some blocks to be double* explicitly,
+// in case they are not parameters, and therefore do not need to be differentiated over by Jets
+// T is the usual ceres magic, while additional types should be specified at the call site to be
+// either T or double depending on wheter the function parameter is an optimization parameter or not
+// if in doubt, try calling <T, T> or <T, double> until it compiles
+template <typename T, typename ExternalT>
 bool model0_projection(
         const double* internal,
-        const T* const external,
+        const ExternalT* const external,
         const T* const point,
         T* residuals) {
 
-    Eigen::Matrix<T, 3, 3, Eigen::ColMajor> R = rotation_matrix_3(external);
+    Eigen::Matrix<T, 3, 3, Eigen::ColMajor> R = rotation_matrix_3<T, ExternalT>(external);
 
     // Translate and rotate to camera frame
     Eigen::Matrix<T, 3, 1, Eigen::ColMajor> Q;
-    Q << point[0] - external[0], point[1] - external[1], external[2];
+    Q << point[0] - T(external[0]), point[1] - T(external[1]), T(external[2]);
     Q = R*Q;
 
     // Normalized (pin-hole) coordinates

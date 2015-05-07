@@ -22,6 +22,7 @@ add_executable(geosolve
     src/geosolve.cpp
     src/image_features.cpp
     src/model0.cpp
+    src/model_terrain.cpp
 )
 target_link_libraries(geosolve
     ${OpenCV_LIBS}

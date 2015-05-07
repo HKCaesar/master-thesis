@@ -16,6 +16,7 @@
 
 #include "project.h"
 #include "model0.h"
+#include "model_terrain.h"
 
 using std::tuple;
 using std::make_tuple;
@@ -51,12 +52,21 @@ Project base_model0_project() {
     init.cameras.push_back({0, 0, 269, 0, 0, 0});
     model->solutions.push_back(init);
 
-    project.model = model;
+    project.models.push_back(model);
 
     return project;
 }
 
+// Add a terrain only model using the previous last model as parent
 void add_model_terrain(Project& project) {
+    std::shared_ptr<ModelTerrain> model(new ModelTerrain());
+
+    // Need to do this but through final_ interfaces
+    // can also move pixel_size to internal
+    model->features = project.models.back()->features;
+    model->internal = project.models.back()->internal;
+    model->pixel_size = project.models.back()->pixel_size;
+    project.models.push_back(model);
 }
 
 void base_model0(const string&, const string& project_dir) {
@@ -93,12 +103,17 @@ void solve(const string&, const string& project_dir) {
     string project_filename = project_dir + "/project.json";
     std::cout << "Solving..." << std::endl;
     Project project = Project::from_file(project_filename);
-    // Verify features have been computed
-    if (!project.model->features || project.model->features->edges.size() == 0 || project.model->features->computed == false) {
-        throw std::runtime_error("Attempting to solve model but no observations are available");
+    for (auto& model : project.models) {
+        // If model hasn't been solved yet
+        if (!model->solved) {
+            // Verify features have been computed
+            if (!model->features || model->features->edges.size() == 0 || model->features->computed == false) {
+                throw std::runtime_error("Attempting to solve model but no observations are available");
+            }
+            model->solve();
+            model->solved = true;
+        }
     }
-
-    project.model->solve();
     project.to_file(project_filename);
 }
 

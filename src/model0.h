@@ -30,7 +30,7 @@ struct Model0ReprojectionError : CostFunction<Model0ReprojectionError, 2, 6, 2> 
 	template <typename T>
 	bool operator()(const T* const external, const T* const point, T* residuals) const {
         // Subtract observed coordinates
-        bool r = model0_projection<T>(internal.data(), external, point, residuals);
+        bool r = model0_projection<T, T>(internal.data(), external, point, residuals);
         residuals[0] -= T(observed.x);
         residuals[1] -= T(observed.y);
         return r;

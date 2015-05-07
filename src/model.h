@@ -54,7 +54,7 @@ struct UnprovidedFinal : public std::runtime_error {
 class Model {
 public:
 
-    Model() {
+    Model() : solved(false) {
         // Solver options common to all models
         options.linear_solver_type = ceres::DENSE_SCHUR;
         options.minimizer_progress_to_stdout = true;
@@ -81,9 +81,11 @@ public:
 
     template <class Archive>
     void serialize(Archive& ar) {
-        ar(cereal::make_nvp("features", features));
+        ar(cereal::make_nvp("solved", solved),
+           cereal::make_nvp("features", features));
     }
 
+    bool solved;
     std::shared_ptr<FeaturesGraph> features;
     std::unique_ptr<ceres::IterationCallback> solution_logger;
     ceres::Problem problem;
