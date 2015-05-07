@@ -6,6 +6,8 @@ void Model0::solve() {
     obs_pair& edge = features->edges[0];
 
     // Initialize terrain by down projecting features
+    // Right now solutions[0] and solutions[0].cameras is created in base() setup
+    // in other models, it is initialized from parent model in Model::solve()
     solutions[0].terrain.resize(edge.obs_a.size());
 
     double rows = features->data_set->rows;

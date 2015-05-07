@@ -50,6 +50,8 @@ def all():
     geosolve_all("model0")
     geosolve_all("model0_200")
 
+# TODO add dtm.py and potree.py to run_all.py
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) >= 2 else "all"
     try:
