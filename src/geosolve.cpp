@@ -144,6 +144,11 @@ void solve(const string&, const string& project_dir) {
     string project_filename = project_dir + "/project.json";
     std::cout << "Solving..." << std::endl;
     Project project = Project::from_file(project_filename);
+    // Verify features have been computed
+    if (!project.model->features || project.model->features->edges.size() == 0 || project.model->features->computed == false) {
+        throw std::runtime_error("Attempting to solve model but no observations are available");
+    }
+
     project.model->solve();
     project.to_file(project_filename);
 }

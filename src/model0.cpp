@@ -2,11 +2,6 @@
 #include "model0.h"
 
 void Model0::solve() {
-    // Verify features have been computed
-    if (!features || features->edges.size() == 0 || features->computed == false) {
-        throw std::runtime_error("Attempting to solve model0 but no observations are available");
-    }
-
     // Note: model0 only works with 2 cams, so will only consider the first edge
     obs_pair& edge = features->edges[0];
 
