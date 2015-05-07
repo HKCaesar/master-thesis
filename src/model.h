@@ -44,6 +44,10 @@ public:
     }
 };
 
+struct UnprovidedFinal : public std::runtime_error {
+    UnprovidedFinal(const std::string& str) : std::runtime_error(std::string("UnprovidedFinal: ") + str) {}
+};
+
 // Base class for models
 // Must overwrite solve()
 class Model {
@@ -60,6 +64,11 @@ public:
 
     virtual void solve() = 0;
     virtual ~Model() {}
+
+    // Optional interfaces for initialising another model with this as parent
+    // Should return the best known value after optimization
+    virtual std::vector<std::array<double, 6>> final_external() const { throw UnprovidedFinal("final_external"); }
+    virtual internal_t final_internal() const { throw UnprovidedFinal("final_internal"); }
 
     // Enable logging of solutions at every step
     template <typename T>
