@@ -52,6 +52,8 @@ public:
 
     virtual void solve() override;
 
+    virtual vector<array<double, 6>> final_external() const override;
+
     template <class Archive>
     void serialize(Archive& ar) {
         ar(cereal::base_class<Model>(this),

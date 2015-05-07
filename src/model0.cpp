@@ -64,3 +64,7 @@ void Model0::solve() {
     ceres::Solve(options, &problem, &summary);
     std::cout << summary.FullReport() << "\n";
 }
+
+vector<array<double, 6>> Model0::final_external() const {
+    return solutions.back().cameras;
+}
