@@ -9,7 +9,7 @@ from itertools import chain, combinations
 from PIL import Image, ImageDraw
 
 import sensor_types
-from project import Project
+from project import Project, pixel_size
 
 sys.path.append("build")
 try: import pymodel0
@@ -86,10 +86,10 @@ class FlatTile(object):
             draw.line([tuple(a[::-1]), tuple(b[::-1])], fill="white", width=2)
         self.image = np.array(im, dtype=np.uint8)
 
-    def draw_observations(self, internal, external, elevation, project, observations):
+    def draw_observations(self, internal, external, elevation, rows, cols, observations):
         im = Image.fromarray(self.image)
         draw = ImageDraw.Draw(im)
-        sensors = sensor_types.pixel_to_sensor(observations, project.model.pixel_size, project.data_set.rows, project.data_set.cols)
+        sensors = sensor_types.pixel_to_sensor(observations, pixel_size(internal), rows, cols)
         world_points = pymodel0.model0_inverse_array(internal, external, sensors, elevation)
         size = 5
         for point in world_points:
@@ -97,11 +97,11 @@ class FlatTile(object):
             draw.ellipse([j-size, i-size, j+size, i+size], fill=None, outline="red")
         self.image = np.array(im, dtype=np.uint8)
 
-    def draw_obs_pair(self, internal, cam_a, cam_b, elevation, project, obs_a, obs_b):
+    def draw_obs_pair(self, internal, cam_a, cam_b, elevation, rows, cols, obs_a, obs_b):
         im = Image.fromarray(self.image)
         draw = ImageDraw.Draw(im)
-        sensors_a = sensor_types.pixel_to_sensor(obs_a, project.model.pixel_size, project.data_set.rows, project.data_set.cols)
-        sensors_b = sensor_types.pixel_to_sensor(obs_b, project.model.pixel_size, project.data_set.rows, project.data_set.cols)
+        sensors_a = sensor_types.pixel_to_sensor(obs_a, pixel_size(internal), rows, cols)
+        sensors_b = sensor_types.pixel_to_sensor(obs_b, pixel_size(internal), rows, cols)
         world_points_a = pymodel0.model0_inverse_array(internal, cam_a, sensors_a, elevation)
         world_points_b = pymodel0.model0_inverse_array(internal, cam_b, sensors_b, elevation)
 
@@ -112,7 +112,7 @@ class FlatTile(object):
             draw.line([j_a, i_a, j_b, i_b], fill="black", width=1)
         self.image = np.array(im, dtype=np.uint8)
 
-    def project_camera(self, internal, external, elevation, pixel_size, image):
+    def project_camera(self, internal, external, elevation, image):
         """
         Orthorectify one image onto the tile
         The procedure works with 2D arrays of shape (n, 2),
@@ -130,7 +130,7 @@ class FlatTile(object):
 
         # Project ground points to get pixel coordinates
         image_pixels = pymodel0.model0_projection_array(internal, external, world_points)
-        image_pixels = sensor_types.sensor_to_pixel(image_pixels, pixel_size, image.shape[0], image.shape[1])
+        image_pixels = sensor_types.sensor_to_pixel(image_pixels, pixel_size(internal), image.shape[0], image.shape[1])
 
         # Remove out of bounds pixels
         mask = image_bounds_mask(image_pixels, image.shape)
@@ -152,6 +152,38 @@ def project_corners(internal, camera, pixel_size, im_shape, elevation):
         [-pixel_size*cols/2, -pixel_size*rows/2]])
     return np.array([pymodel0.model0_inverse(internal, camera, pix, elevation) for pix in points_image])
 
+def orthoimage_model0(data_root, project_dir, data_set, model, solution_max):
+    elevation = 0
+    left = io.imread(os.path.join(data_root, data_set.filenames[0]))
+    right = io.imread(os.path.join(data_root, data_set.filenames[1]))
+    image_shape = left.shape
+
+    tile_dir = os.path.abspath(os.path.join(project_dir, "orthoimage"))
+    os.makedirs(tile_dir, exist_ok=True)
+    number_of_solutions = len(model.solutions)
+    for solution_number in range(number_of_solutions if solution_max is None else solution_max):
+        print("{}/{}".format(solution_number+1, number_of_solutions))
+        cam_left = np.array(model.solutions[solution_number].cameras[0], dtype=np.float64)
+        cam_right = np.array(model.solutions[solution_number].cameras[1], dtype=np.float64)
+
+        corners_left  = project_corners(model.internal, cam_left , pixel_size(model.internal), image_shape, elevation)
+        corners_right = project_corners(model.internal, cam_right, pixel_size(model.internal), image_shape, elevation)
+
+        world_rect = WorldRect.from_points(np.vstack([corners_left, corners_right]))
+
+        gsd = 0.25
+        tile = FlatTile(world_rect, gsd)
+
+        tile.draw_cam_trace(corners_left)
+        tile.draw_cam_trace(corners_right)
+        tile.project_camera(model.internal, cam_left, elevation, left)
+        tile.project_camera(model.internal, cam_right, elevation, right)
+        tile.draw_observations(model.internal, cam_left, elevation, data_set.rows, data_set.cols, model.features.edges[0].obs_a)
+        tile.draw_observations(model.internal, cam_right, elevation, data_set.rows, data_set.cols, model.features.edges[0].obs_b)
+        tile.draw_obs_pair(model.internal, cam_left, cam_right, elevation, data_set.rows, data_set.cols, model.features.edges[0].obs_a, model.features.edges[0].obs_b)
+
+        io.imsave(os.path.join(tile_dir, "iteration{}.jpg".format(solution_number)), tile.image)
+
 # TODO: profile orthoimage for performance
 # TODO: check why first two solutions are identical
 
@@ -162,45 +194,12 @@ def main():
 
     data_root = sys.argv[1]
     project_dir = sys.argv[2]
-    model_filename = os.path.join(project_dir, "project.json")
+    project = Project(os.path.join(project_dir, "project.json"))
     solution_max = int(sys.argv[3]) if len(sys.argv) >= 4 else None
 
-    project = Project(model_filename)
-    elevation = 0
-    internal = np.array(project.model.internal, dtype=np.float64)
-    pixel_size = project.model.pixel_size
-
-    left = io.imread(os.path.join(data_root, project.data_set.filenames[0]))
-    right = io.imread(os.path.join(data_root, project.data_set.filenames[1]))
-    image_shape = left.shape
-
-    # Down project all cameras corners to get the area
-
-    tile_dir = os.path.abspath(os.path.join(project_dir, "orthoimage"))
-    os.makedirs(tile_dir, exist_ok=True)
-    number_of_solutions = len(project.model.solutions)
-    for solution_number in range(number_of_solutions if solution_max is None else solution_max):
-        print("{}/{}".format(solution_number+1, number_of_solutions))
-        cam_left = np.array(project.model.solutions[solution_number].cameras[0], dtype=np.float64)
-        cam_right = np.array(project.model.solutions[solution_number].cameras[1], dtype=np.float64)
-
-        corners_left  = project_corners(internal, cam_left , pixel_size, image_shape, elevation)
-        corners_right = project_corners(internal, cam_right, pixel_size, image_shape, elevation)
-
-        world_rect = WorldRect.from_points(np.vstack([corners_left, corners_right]))
-
-        gsd = 0.25
-        tile = FlatTile(world_rect, gsd)
-
-        tile.draw_cam_trace(corners_left)
-        tile.draw_cam_trace(corners_right)
-        tile.project_camera(internal, cam_left, elevation, pixel_size, left)
-        tile.project_camera(internal, cam_right, elevation, pixel_size, right)
-        tile.draw_observations(internal, cam_left, elevation, project, project.features.edges[0].obs_a)
-        tile.draw_observations(internal, cam_right, elevation, project, project.features.edges[0].obs_b)
-        tile.draw_obs_pair(internal, cam_left, cam_right, elevation, project, project.features.edges[0].obs_a, project.features.edges[0].obs_b)
-
-        io.imsave(os.path.join(tile_dir, "iteration{}.jpg".format(solution_number)), tile.image)
+    for model in project.models:
+        if type(model).__name__ == "Model0":
+            orthoimage_model0(data_root, project_dir, project.data_set, model, solution_max)
 
 if __name__ == "__main__":
     main()

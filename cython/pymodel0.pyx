@@ -13,7 +13,7 @@ cdef assert_size(np.ndarray[double, ndim=1] arr, long expected_size):
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def model0_projection(np.ndarray[double, ndim=1] internal, np.ndarray[double, ndim=1] external, np.ndarray[double, ndim=1] point):
-    assert_size(internal, 3)
+    assert_size(internal, 4)
     assert_size(external, 6)
     assert_size(point, 2)
     cdef double residuals[2]
@@ -23,7 +23,7 @@ def model0_projection(np.ndarray[double, ndim=1] internal, np.ndarray[double, nd
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def model0_projection_array(np.ndarray[double, ndim=1] internal, np.ndarray[double, ndim=1] external, np.ndarray[double, ndim=2] point):
-    assert_size(internal, 3)
+    assert_size(internal, 4)
     assert_size(external, 6)
 
     cdef np.ndarray[double, ndim=2] result = np.zeros((point.shape[0], 2), dtype=np.float64)
@@ -35,7 +35,7 @@ def model0_projection_array(np.ndarray[double, ndim=1] internal, np.ndarray[doub
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def model0_inverse(np.ndarray[double, ndim=1] internal, np.ndarray[double, ndim=1] external, np.ndarray[double, ndim=1] pix, double elevation):
-    assert_size(internal, 3)
+    assert_size(internal, 4)
     assert_size(external, 6)
     assert_size(pix, 2)
 
@@ -47,7 +47,7 @@ def model0_inverse(np.ndarray[double, ndim=1] internal, np.ndarray[double, ndim=
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def model0_inverse_array(np.ndarray[double, ndim=1] internal, np.ndarray[double, ndim=1] external, np.ndarray[double, ndim=2] pix, double elevation):
-    assert_size(internal, 3)
+    assert_size(internal, 4)
     assert_size(external, 6)
 
     cdef np.ndarray[double, ndim=2] result = np.zeros((pix.shape[0], 3), dtype=np.float64)
