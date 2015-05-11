@@ -3,7 +3,7 @@
 
 #include <array>
 
-typedef std::array<double, 3> internal_t;
+typedef std::array<double, 4> internal_t;
 
 // Templated for use in ceres
 template <typename T>
@@ -18,7 +18,8 @@ template <typename T>
 inline T& pp_y(T* data) {return data[2];}
 inline double& pp_y(internal_t& data) {return data[2];}
 
-// template <typename T>
-// T& pixel_size(T* data) {return data[3];}
+template <typename T>
+inline T& pixel_size(T* data) {return data[3];}
+inline const double& pixel_size(const internal_t& data) {return data[3];}
 
 #endif

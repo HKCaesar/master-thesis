@@ -58,12 +58,10 @@ public:
     void serialize(Archive& ar) {
         ar(cereal::base_class<Model>(this),
            cereal::make_nvp("internal", internal),
-           cereal::make_nvp("pixel_size", pixel_size),
            cereal::make_nvp("solutions", solutions));
     }
 
     internal_t internal;
-    double pixel_size = 0.0;
 
     // List of solutions, from the initial guess (or parent model) to local optimum
     vector<solution> solutions;

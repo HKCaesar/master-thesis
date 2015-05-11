@@ -45,8 +45,7 @@ Project base_model0_project() {
     // Initialize initial solution from parent model
     // (for now hard coded left-right images)
     model->features = project.features;
-    model->internal = {48.3355e-3, 0.0093e-3, -0.0276e-3};
-    model->pixel_size = 0.0085e-3;
+    model->internal = {48.3355e-3, 0.0093e-3, -0.0276e-3, 0.0085e-3};
     Model0::solution init;
     init.cameras.push_back({0, 0, 269, 0, 0, 0});
     init.cameras.push_back({0, 0, 269, 0, 0, 0});
@@ -61,11 +60,8 @@ Project base_model0_project() {
 void add_model_terrain(Project& project) {
     std::shared_ptr<ModelTerrain> model(new ModelTerrain());
 
-    // Need to do this but through final_ interfaces
-    // can also move pixel_size to internal
     model->features = project.models.back()->features;
-    model->internal = project.models.back()->internal;
-    model->pixel_size = project.models.back()->pixel_size;
+    model->internal = project.models.back()->final_internal();
     project.models.push_back(model);
 }
 
@@ -101,11 +97,11 @@ void features(const string& data_dir, const string& project_dir) {
 
 void solve(const string&, const string& project_dir) {
     string project_filename = project_dir + "/project.json";
-    std::cout << "Solving..." << std::endl;
     Project project = Project::from_file(project_filename);
     for (auto& model : project.models) {
         // If model hasn't been solved yet
         if (!model->solved) {
+            std::cout << "Solving..." << std::endl;
             // Verify features have been computed
             if (!model->features || model->features->edges.size() == 0 || model->features->computed == false) {
                 throw std::runtime_error("Attempting to solve model but no observations are available");

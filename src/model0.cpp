@@ -16,8 +16,8 @@ void Model0::solve() {
     // For each observation
     for (size_t i = 0; i < edge.obs_a.size(); i++) {
         // Down project to z=0 to initialize terrain
-        sensor_t sens_a = edge.obs_a[i].to_sensor(pixel_size, rows, cols);
-        sensor_t sens_b = edge.obs_b[i].to_sensor(pixel_size, rows, cols);
+        sensor_t sens_a = edge.obs_a[i].to_sensor(pixel_size(internal), rows, cols);
+        sensor_t sens_b = edge.obs_b[i].to_sensor(pixel_size(internal), rows, cols);
 
         double dx_a, dy_a;
         double dx_b, dy_b;
@@ -38,7 +38,7 @@ void Model0::solve() {
     // Setup parameter and residual blocks
     for (size_t i = 0; i < edge.obs_a.size(); i++) {
         // Residual for left cam
-        sensor_t obs_left = edge.obs_a[i].to_sensor(pixel_size, rows, cols);
+        sensor_t obs_left = edge.obs_a[i].to_sensor(pixel_size(internal), rows, cols);
 		ceres::CostFunction* cost_function_left = Model0ReprojectionError::make(internal, obs_left);
 		problem.AddResidualBlock(cost_function_left,
 			NULL,
@@ -47,7 +47,7 @@ void Model0::solve() {
 			);
 
         // Residual for right cam
-        sensor_t obs_right = edge.obs_b[i].to_sensor(pixel_size, rows, cols);
+        sensor_t obs_right = edge.obs_b[i].to_sensor(pixel_size(internal), rows, cols);
 		ceres::CostFunction* cost_function_right = Model0ReprojectionError::make(internal, obs_right);
 		problem.AddResidualBlock(cost_function_right,
 			NULL,

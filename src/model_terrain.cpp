@@ -5,7 +5,6 @@
 // Inverse the features of a given features match at given elevation
 // Returns the average of the two ground points
 vector<array<double, 3>> inverse_features_average(const obs_pair& edge, const double elevation,
-        const double pixel_size,
         const double rows,
         const double cols,
         const internal_t& internal,
@@ -15,8 +14,8 @@ vector<array<double, 3>> inverse_features_average(const obs_pair& edge, const do
     // For each observation
     for (size_t i = 0; i < edge.obs_a.size(); i++) {
         // Down project to elevation
-        sensor_t sens_a = edge.obs_a[i].to_sensor(pixel_size, rows, cols);
-        sensor_t sens_b = edge.obs_b[i].to_sensor(pixel_size, rows, cols);
+        sensor_t sens_a = edge.obs_a[i].to_sensor(pixel_size(internal), rows, cols);
+        sensor_t sens_b = edge.obs_b[i].to_sensor(pixel_size(internal), rows, cols);
 
         double dx_a, dy_a;
         double dx_b, dy_b;
@@ -46,7 +45,6 @@ void ModelTerrain::solve() {
     // For now only use two cams (= only edges[0])
     solution sol{inverse_features_average(features->edges[0],
             0.0, // initial elevation
-            pixel_size,
             rows,
             cols,
             internal,
@@ -60,7 +58,7 @@ void ModelTerrain::solve() {
     const obs_pair& edge = features->edges[0];
     for (size_t i = 0; i < edge.obs_a.size(); i++) {
         // Residual for left cam
-        sensor_t obs_left = edge.obs_a[i].to_sensor(pixel_size, rows, cols);
+        sensor_t obs_left = edge.obs_a[i].to_sensor(pixel_size(internal), rows, cols);
 		ceres::CostFunction* cost_function_left = ModelTerrainReprojectionError::make(internal, cameras[edge.cam_a], obs_left);
 		problem.AddResidualBlock(cost_function_left,
 			NULL,
@@ -68,7 +66,7 @@ void ModelTerrain::solve() {
 			);
 
         // Residual for right cam
-        sensor_t obs_right = edge.obs_b[i].to_sensor(pixel_size, rows, cols);
+        sensor_t obs_right = edge.obs_b[i].to_sensor(pixel_size(internal), rows, cols);
 		ceres::CostFunction* cost_function_right = ModelTerrainReprojectionError::make(internal, cameras[edge.cam_b], obs_right);
 		problem.AddResidualBlock(cost_function_right,
 			NULL,

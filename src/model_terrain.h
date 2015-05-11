@@ -57,15 +57,12 @@ public:
         ar(cereal::base_class<Model>(this),
            cereal::make_nvp("cameras", cameras),
            cereal::make_nvp("internal", internal),
-           cereal::make_nvp("pixel_size", pixel_size),
            cereal::make_nvp("parent", parent),
            cereal::make_nvp("solutions", solutions));
     }
 
-    // TODO make pixel_size part of internals
     vector<array<double, 6>> cameras;
     internal_t internal;
-    double pixel_size = 0.0;
     vector<solution> solutions;
     std::shared_ptr<Model> parent;
 };
