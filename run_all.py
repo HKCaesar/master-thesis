@@ -37,6 +37,8 @@ def geosolve_dir(name):
     do_log("./build/geosolve ../data {} features".format(project_dir))
     do_log("./build/geosolve ../data {} solve".format(project_dir))
     do_log("./python/orthoimage.py ../data {}".format(project_dir))
+    do_log("./python/dtm.py ../data {}".format(project_dir))
+    do_log("./python/potree.py {}".format(os.path.join(project_dir, "flatdtm")))
 
 def geosolve():
     if len(sys.argv) < 3:
