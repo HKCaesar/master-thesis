@@ -8,7 +8,7 @@ import numpy as np
 from skimage import io
 
 import sensor_types
-from project import Project
+from project import Project, pixel_size
 from orthoimage import get_pixel_colors
 
 sys.path.append("build")
@@ -32,7 +32,11 @@ def main():
 
     # For each point in the DTM, project to camera and extract color
     elevation = 0
-    sol = project.model.solutions[0]
+
+    # TODO loop over all models and use 3D points systematically
+    model = project.models[0]
+    data_set = project.data_set
+    sol = model.solutions[0]
 
     cam_left = sol.cameras[0]
     cam_right = sol.cameras[1]
@@ -40,8 +44,8 @@ def main():
     n = sol.terrain.shape[0]
     points = np.hstack((sol.terrain, elevation*np.ones((n, 1))))
 
-    sens_left = pymodel0.model0_projection_array(project.model.internal, cam_left, points)
-    pix_left = sensor_types.sensor_to_pixel(sens_left, project.model.pixel_size, project.model.rows, project.model.cols)
+    sens_left = pymodel0.model0_projection_array(model.internal, cam_left, points)
+    pix_left = sensor_types.sensor_to_pixel(sens_left, pixel_size(model.internal), data_set.rows, data_set.cols)
 
     # Take left image for now
     # More proerly should take a (gamma corrected?) blending of all visible images
