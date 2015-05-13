@@ -35,16 +35,17 @@ Project base_model0_project() {
     project.data_set->rows = 2832;
     project.data_set->cols = 4256;
 
-    project.features = std::shared_ptr<FeaturesGraph>(new FeaturesGraph());
-    project.features->data_set = project.data_set;
-    project.features->number_of_matches = 10;
-    project.features->add_edge(0, 1);
+    std::shared_ptr<FeaturesGraph> feat(new FeaturesGraph());
+    feat->data_set = project.data_set;
+    feat->number_of_matches = 10;
+    feat->add_edge(0, 1);
+    project.features_list.push_back(feat);
 
     std::shared_ptr<Model0> model(new Model0());
 
     // Initialize initial solution from parent model
     // (for now hard coded left-right images)
-    model->features = project.features;
+    model->features = feat;
     model->internal = {48.3355e-3, 0.0093e-3, -0.0276e-3, 0.0085e-3};
     Model0::solution init;
     init.cameras.push_back({0, 0, 269, 0, 0, 0});
@@ -63,7 +64,7 @@ void add_model_terrain(Project& project) {
     model->parent = project.models.back();
     // TODO Add high density features and support for vector of features in Project
     // for now reuse existing
-    model->features = project.features;
+    model->features = project.features_list[0];
     project.models.push_back(model);
 }
 
@@ -76,13 +77,13 @@ void base_model0(const string&, const string& project_dir) {
 
 void base_model0_200(const string&, const string& project_dir) {
     Project project = base_model0_project();
-    project.features->number_of_matches = 200;
+    project.features_list[0]->number_of_matches = 200;
     project.to_file(project_dir + "/project.json");
 }
 
 void base_model0_scale(const string&, const string& project_dir, double compute_scale) {
     Project project = base_model0_project();
-    project.features->compute_scale = compute_scale;
+    project.features_list[0]->compute_scale = compute_scale;
     project.to_file(project_dir + "/project.json");
 }
 
@@ -94,9 +95,14 @@ void load_test(const string&, const string& project_dir) {
 void features(const string& data_dir, const string& project_dir) {
     string project_filename = project_dir + "/project.json";
     Project project = Project::from_file(project_filename);
-    // TODO check if already computed, right now if repeated features appear twice
-    std::cout << "Computing features" << std::endl;
-    project.features->compute(data_dir);
+    for (auto& feat : project.features_list) {
+        if (feat->computed) {
+            std::cout << "Features already computed, skipping" << std::endl;
+        } else {
+            std::cout << "Computing features" << std::endl;
+            feat->compute(data_dir);
+        }
+    }
     project.to_file(project_filename);
 }
 

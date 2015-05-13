@@ -35,7 +35,7 @@ namespace cereal {
 
 struct Project {
     std::shared_ptr<DataSet> data_set;
-    std::shared_ptr<FeaturesGraph> features;
+    std::vector<std::shared_ptr<FeaturesGraph>> features_list;
     std::vector<std::shared_ptr<Model>> models;
 
     static Project from_file(const std::string& filename) {
@@ -59,7 +59,7 @@ struct Project {
     template <class Archive>
     void serialize(Archive& ar) {
         ar(cereal::make_nvp("data_set", data_set),
-           cereal::make_nvp("features", features),
+           cereal::make_nvp("features_list", features_list),
            cereal::make_nvp("models", models));
     }
 };
