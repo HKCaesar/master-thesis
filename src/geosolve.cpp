@@ -59,11 +59,15 @@ Project base_model0_project() {
 // Add a terrain only model using the previous last model as parent
 void add_model_terrain(Project& project) {
     std::shared_ptr<ModelTerrain> model(new ModelTerrain());
-
-    model->features = project.models.back()->features;
-    model->internal = project.models.back()->final_internal();
+    // Set parent to latest model
+    model->parent = project.models.back();
+    // TODO Add high density features and support for vector of features in Project
+    // for now reuse existing
+    model->features = project.features;
     project.models.push_back(model);
 }
+
+// geosolve commands
 
 void base_model0(const string&, const string& project_dir) {
     Project project = base_model0_project();
@@ -90,6 +94,7 @@ void load_test(const string&, const string& project_dir) {
 void features(const string& data_dir, const string& project_dir) {
     string project_filename = project_dir + "/project.json";
     Project project = Project::from_file(project_filename);
+    // TODO check if already computed, right now if repeated features appear twice
     std::cout << "Computing features" << std::endl;
     project.features->compute(data_dir);
     project.to_file(project_filename);
@@ -100,7 +105,9 @@ void solve(const string&, const string& project_dir) {
     Project project = Project::from_file(project_filename);
     for (auto& model : project.models) {
         // If model hasn't been solved yet
-        if (!model->solved) {
+        if (model->solved) {
+            std::cout << "Model already solved, skipping" << std::endl;
+        } else {
             std::cout << "Solving..." << std::endl;
             // Verify features have been computed
             if (!model->features || model->features->edges.size() == 0 || model->features->computed == false) {
@@ -110,6 +117,14 @@ void solve(const string&, const string& project_dir) {
             model->solved = true;
         }
     }
+    project.to_file(project_filename);
+}
+
+void model_terrain(const string&, const string& project_dir) {
+    string project_filename = project_dir + "/project.json";
+    Project project = Project::from_file(project_filename);
+    std::cout << "Adding Model Terrain to existing project file" << std::endl;
+    add_model_terrain(project);
     project.to_file(project_filename);
 }
 
@@ -130,6 +145,7 @@ int main(int argc, char* argv[]) {
         {"base_model0_200", base_model0_200},
         {"base_model0_half", std::bind(base_model0_scale, _1, _2, 0.5)},
         {"base_model0_quarter", std::bind(base_model0_scale, _1, _2, 0.25)},
+        {"model_terrain", model_terrain},
         {"loadtest", load_test},
         {"features", features},
         {"solve", solve}

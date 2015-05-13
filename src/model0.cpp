@@ -65,6 +65,10 @@ void Model0::solve() {
     std::cout << summary.FullReport() << "\n";
 }
 
+internal_t Model0::final_internal() const {
+    return internal;
+}
+
 vector<array<double, 6>> Model0::final_external() const {
     return solutions.back().cameras;
 }

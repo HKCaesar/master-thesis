@@ -52,6 +52,7 @@ public:
 
     virtual void solve() override;
 
+    virtual internal_t final_internal() const override;
     virtual vector<array<double, 6>> final_external() const override;
 
     template <class Archive>

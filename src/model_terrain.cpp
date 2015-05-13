@@ -25,7 +25,7 @@ vector<array<double, 3>> inverse_features_average(const obs_pair& edge, const do
         image_to_world(internal.data(), cameras[edge.cam_b].data(), pix_b, &elevation, &dx_b, &dy_b);
 
         // Take average of both projections
-        points[i] = {(dx_a + dx_b)/2.0, (dy_a + dy_b)/2.0, elevation};
+        points.push_back({(dx_a + dx_b)/2.0, (dy_a + dy_b)/2.0, elevation});
     }
     return points;
 }
@@ -35,7 +35,8 @@ void ModelTerrain::solve() {
         throw("Solving ModelTerrain but no parent provided.");
     }
 
-    // Initialize cameras from parent
+    // Initialize cameras and internals from parent
+    internal = parent->final_internal();
     cameras = parent->final_external();
 
     const double rows = features->data_set->rows;
