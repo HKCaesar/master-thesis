@@ -69,6 +69,6 @@ class Project(object):
         ptrmap = PtrMap()
         p = json.load(open(filename))
         self.data_set = ptrmap.load(DataSet, p["data_set"]["ptr_wrapper"])
-        self.features = ptrmap.load(ImageGraph, p["features"]["ptr_wrapper"])
+        self.features = [ptrmap.load(ImageGraph, ig["ptr_wrapper"]) for ig in p["features_list"]]
         self.models = [ptrmap.load(polymorphic_models[m["polymorphic_name"]], m["ptr_wrapper"]) for m in p["models"]]
 
