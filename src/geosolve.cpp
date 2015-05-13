@@ -62,9 +62,16 @@ void add_model_terrain(Project& project) {
     std::shared_ptr<ModelTerrain> model(new ModelTerrain());
     // Set parent to latest model
     model->parent = project.models.back();
-    // TODO Add high density features and support for vector of features in Project
-    // for now reuse existing
-    model->features = project.features_list[0];
+
+    // High density features
+    std::shared_ptr<FeaturesGraph> feat(new FeaturesGraph());
+    feat->data_set = project.data_set;
+    feat->number_of_matches = 500;
+    feat->compute_scale = 0.25;
+    feat->add_edge(0, 1);
+    project.features_list.push_back(feat);
+
+    model->features = feat;
     project.models.push_back(model);
 }
 
