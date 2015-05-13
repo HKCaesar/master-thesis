@@ -50,6 +50,7 @@ struct Project {
     }
 
     void to_file(const std::string& filename) {
+        // TODO this silently fails if directory doesn't exist
         std::ofstream ofs(filename);
         cereal::JSONOutputArchive ar(ofs);
         this->serialize(ar);

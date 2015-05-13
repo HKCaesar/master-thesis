@@ -195,6 +195,7 @@ def main():
     data_root = sys.argv[1]
     project_dir = sys.argv[2]
     project = Project(os.path.join(project_dir, "project.json"))
+
     solution_max = int(sys.argv[3]) if len(sys.argv) >= 4 else None
 
     for model in project.models:

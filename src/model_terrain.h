@@ -54,7 +54,7 @@ public:
 
     template <class Archive>
     void serialize(Archive& ar) {
-        ar(cereal::base_class<Model>(this),
+        ar(cereal::make_nvp("base", cereal::base_class<Model>(this)),
            cereal::make_nvp("cameras", cameras),
            cereal::make_nvp("internal", internal),
            cereal::make_nvp("parent", parent),

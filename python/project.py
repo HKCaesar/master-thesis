@@ -36,7 +36,19 @@ class Model0(object):
         self.internal = np.array(data["internal"], dtype=np.float64)
         self.solutions = [Solution(sol) for sol in data["solutions"]]
 
-polymorphic_models = {"Model0": Model0}
+class ModelTerrain(object):
+    def __init__(self, data, ptrmap=None):
+        if ptrmap is not None:
+            self.features = ptrmap.load(ImageGraph, data["base"]["features"]["ptr_wrapper"])
+        self.internal = np.array(data["internal"], dtype=np.float64)
+        self.cameras = np.array(data["cameras"], dtype=np.float64)
+        # TODO ModelTerrain::solution type
+        # self.solutions = [Solution(sol) for sol in data["solutions"]]
+
+polymorphic_models = {
+    "Model0": Model0,
+    "ModelTerrain": ModelTerrain
+}
 
 class PtrMap(object):
     def __init__(self):
