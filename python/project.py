@@ -36,13 +36,13 @@ class Model0(object):
         self.internal = np.array(data["internal"], dtype=np.float64)
         self.solutions = [Model0Solution(sol) for sol in data["solutions"]]
 
-    def external(self, solution_number):
+    def fexternal(self, solution_number):
         return self.solutions[solution_number].cameras
 
-    def internal(self, solution_number):
+    def finternal(self, solution_number):
         return self.internal
 
-    def terrain(self, solution_number):
+    def fterrain(self, solution_number):
         return self.solutions[solution_number].terrain
 
 class ModelTerrainSolution(object):
@@ -57,13 +57,14 @@ class ModelTerrain(object):
         self.cameras = np.array(data["cameras"], dtype=np.float64)
         self.solutions = [ModelTerrainSolution(sol) for sol in data["solutions"]]
 
-    def external(self, solution_number):
+    # Interfaces
+    def fexternal(self, solution_number):
         return self.cameras
 
-    def internal(self, solution_number):
+    def finternal(self, solution_number):
         return self.internal
 
-    def terrain(self, solution_number):
+    def fterrain(self, solution_number):
         return self.solutions[solution_number].terrain
 
 polymorphic_models = {

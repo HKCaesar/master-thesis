@@ -151,23 +151,24 @@ def project_corners(internal, camera, pixel_size, im_shape, elevation):
         [-pixel_size*cols/2, -pixel_size*rows/2]])
     return np.array([pymodel0.model0_inverse(internal, camera, pix, elevation) for pix in points_image])
 
-def orthoimage_model0(data_root, project_dir, data_set, model):
+# Produce orthoimage at elevation = 0 for some iterations (e.g. first and last)
+def produce_flat_orthoimages(data_root, project_dir, data_set, model, model_number):
     elevation = 0
     left = io.imread(os.path.join(data_root, data_set.filenames[0]))
     right = io.imread(os.path.join(data_root, data_set.filenames[1]))
     image_shape = left.shape
 
-    tile_dir = os.path.abspath(os.path.join(project_dir, "orthoimage"))
+    tile_dir = os.path.abspath(os.path.join(project_dir, "flatortho{}-{}".format(model_number, type(model).__name__)))
     os.makedirs(tile_dir, exist_ok=True)
     number_of_solutions = len(model.solutions)
 
     def produce(solution_number, gsd):
         print("{}/{}".format(solution_number+1, number_of_solutions))
-        cam_left = np.array(model.solutions[solution_number].cameras[0], dtype=np.float64)
-        cam_right = np.array(model.solutions[solution_number].cameras[1], dtype=np.float64)
+        cam_left = model.fexternal(solution_number)[0]
+        cam_right = model.fexternal(solution_number)[1]
 
-        corners_left  = project_corners(model.internal, cam_left , pixel_size(model.internal), image_shape, elevation)
-        corners_right = project_corners(model.internal, cam_right, pixel_size(model.internal), image_shape, elevation)
+        corners_left  = project_corners(model.finternal(solution_number), cam_left , pixel_size(model.finternal(solution_number)), image_shape, elevation)
+        corners_right = project_corners(model.finternal(solution_number), cam_right, pixel_size(model.finternal(solution_number)), image_shape, elevation)
 
         world_rect = WorldRect.from_points(np.vstack([corners_left, corners_right]))
 
@@ -175,11 +176,11 @@ def orthoimage_model0(data_root, project_dir, data_set, model):
 
         tile.draw_cam_trace(corners_left)
         tile.draw_cam_trace(corners_right)
-        tile.project_camera(model.internal, cam_left, elevation, left)
-        tile.project_camera(model.internal, cam_right, elevation, right)
-        tile.draw_observations(model.internal, cam_left, elevation, data_set.rows, data_set.cols, model.features.edges[0].obs_a)
-        tile.draw_observations(model.internal, cam_right, elevation, data_set.rows, data_set.cols, model.features.edges[0].obs_b)
-        tile.draw_obs_pair(model.internal, cam_left, cam_right, elevation, data_set.rows, data_set.cols, model.features.edges[0].obs_a, model.features.edges[0].obs_b)
+        tile.project_camera(model.finternal(solution_number), cam_left, elevation, left)
+        tile.project_camera(model.finternal(solution_number), cam_right, elevation, right)
+        tile.draw_observations(model.finternal(solution_number), cam_left, elevation, data_set.rows, data_set.cols, model.features.edges[0].obs_a)
+        tile.draw_observations(model.finternal(solution_number), cam_right, elevation, data_set.rows, data_set.cols, model.features.edges[0].obs_b)
+        tile.draw_obs_pair(model.finternal(solution_number), cam_left, cam_right, elevation, data_set.rows, data_set.cols, model.features.edges[0].obs_a, model.features.edges[0].obs_b)
 
         io.imsave(os.path.join(tile_dir, "iteration{}.jpg".format(solution_number)), tile.image)
 
@@ -198,9 +199,9 @@ def main():
     project_dir = sys.argv[2]
     project = Project(os.path.join(project_dir, "project.json"))
 
-    for model in project.models:
-        if type(model).__name__ == "Model0":
-            orthoimage_model0(data_root, project_dir, project.data_set, model)
+    for (model_number, model) in enumerate(project.models):
+        # model is duck-typed here
+        produce_flat_orthoimages(data_root, project_dir, project.data_set, model, model_number)
 
 if __name__ == "__main__":
     main()
