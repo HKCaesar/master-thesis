@@ -14,7 +14,7 @@ def system(cmd):
 view_dtm_script = """
 #!/bin/bash 
 i3-msg workspace 2
-firefox -new-window http://0.0.0.0:8000/potree/examples/dtm.xyz.html
+firefox http://0.0.0.0:8000/potree/examples/dtm.xyz.html
 konsole --nofork -e /bin/bash -c "python3 -m http.server"
 """
 
