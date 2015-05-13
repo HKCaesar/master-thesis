@@ -152,7 +152,7 @@ def project_corners(internal, camera, pixel_size, im_shape, elevation):
         [-pixel_size*cols/2, -pixel_size*rows/2]])
     return np.array([pymodel0.model0_inverse(internal, camera, pix, elevation) for pix in points_image])
 
-def orthoimage_model0(data_root, project_dir, data_set, model, solution_max):
+def orthoimage_model0(data_root, project_dir, data_set, model):
     elevation = 0
     left = io.imread(os.path.join(data_root, data_set.filenames[0]))
     right = io.imread(os.path.join(data_root, data_set.filenames[1]))
@@ -161,7 +161,8 @@ def orthoimage_model0(data_root, project_dir, data_set, model, solution_max):
     tile_dir = os.path.abspath(os.path.join(project_dir, "orthoimage"))
     os.makedirs(tile_dir, exist_ok=True)
     number_of_solutions = len(model.solutions)
-    for solution_number in range(number_of_solutions if solution_max is None else solution_max):
+
+    def produce(solution_number, gsd):
         print("{}/{}".format(solution_number+1, number_of_solutions))
         cam_left = np.array(model.solutions[solution_number].cameras[0], dtype=np.float64)
         cam_right = np.array(model.solutions[solution_number].cameras[1], dtype=np.float64)
@@ -171,7 +172,6 @@ def orthoimage_model0(data_root, project_dir, data_set, model, solution_max):
 
         world_rect = WorldRect.from_points(np.vstack([corners_left, corners_right]))
 
-        gsd = 0.25
         tile = FlatTile(world_rect, gsd)
 
         tile.draw_cam_trace(corners_left)
@@ -183,6 +183,9 @@ def orthoimage_model0(data_root, project_dir, data_set, model, solution_max):
         tile.draw_obs_pair(model.internal, cam_left, cam_right, elevation, data_set.rows, data_set.cols, model.features.edges[0].obs_a, model.features.edges[0].obs_b)
 
         io.imsave(os.path.join(tile_dir, "iteration{}.jpg".format(solution_number)), tile.image)
+
+    produce(0, 0.25)
+    produce(number_of_solutions-1, 0.25)
 
 # TODO: profile orthoimage for performance
 # TODO: check why first two solutions are identical
@@ -196,11 +199,9 @@ def main():
     project_dir = sys.argv[2]
     project = Project(os.path.join(project_dir, "project.json"))
 
-    solution_max = int(sys.argv[3]) if len(sys.argv) >= 4 else None
-
     for model in project.models:
         if type(model).__name__ == "Model0":
-            orthoimage_model0(data_root, project_dir, project.data_set, model, solution_max)
+            orthoimage_model0(data_root, project_dir, project.data_set, model)
 
 if __name__ == "__main__":
     main()
