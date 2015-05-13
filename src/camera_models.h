@@ -81,7 +81,7 @@ bool model0_projection(
 
 // Instanciate the templated version for cython export
 inline bool model0_projection_double(const double* internal, const double* external, const double* point, double* residuals) {
-    return model0_projection<double>(internal, external, point, residuals);
+    return model0_projection<double, double>(internal, external, point, residuals);
 }
 
 // Downproject to fixed elevation
@@ -130,6 +130,35 @@ inline void model0_image_to_world_double(const double* const internal,
                                   const double* elevation,
                                   double* dx, double* dy) {
     image_to_world<double>(internal, external, pix, elevation, dx, dy);
+}
+
+// TODO: remove all usage of model0_projection in all the python code
+// Non distorted internals
+// 6 dof external
+// 3D points
+template <typename T, typename InternalT, typename ExternalT, typename PointT>
+bool pinhole_projection(
+        const InternalT* internal,
+        const ExternalT* const external,
+        const PointT* const point,
+        T* residuals) {
+
+    Eigen::Matrix<T, 3, 3, Eigen::ColMajor> R = rotation_matrix_3<T, ExternalT>(external);
+
+    // Translate and rotate to camera frame
+    Eigen::Matrix<T, 3, 1, Eigen::ColMajor> Q;
+    Q << T(point[0]) - T(external[0]), T(point[1]) - T(external[1]), T(external[2]) - T(point[2]);
+    Q = R*Q;
+
+    // Normalized (pin-hole) coordinates
+    T x = Q(0, 0) / Q(2, 0);
+    T y = Q(1, 0) / Q(2, 0);
+
+    // Apply focal length and principal point
+    residuals[0] = focal_length(internal) * x + pp_x(internal);
+    residuals[1] = focal_length(internal) * y + pp_y(internal);
+
+    return true;
 }
 
 #endif
