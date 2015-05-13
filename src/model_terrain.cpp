@@ -61,18 +61,12 @@ void ModelTerrain::solve() {
         // Residual for left cam
         sensor_t obs_left = edge.obs_a[i].to_sensor(pixel_size(internal), rows, cols);
 		ceres::CostFunction* cost_function_left = ModelTerrainReprojectionError::make(internal, cameras[edge.cam_a], obs_left);
-		problem.AddResidualBlock(cost_function_left,
-			NULL,
-			working_solution.terrain[i].data()
-			);
+		problem.AddResidualBlock(cost_function_left, NULL, working_solution.terrain[i].data());
 
         // Residual for right cam
         sensor_t obs_right = edge.obs_b[i].to_sensor(pixel_size(internal), rows, cols);
 		ceres::CostFunction* cost_function_right = ModelTerrainReprojectionError::make(internal, cameras[edge.cam_b], obs_right);
-		problem.AddResidualBlock(cost_function_right,
-			NULL,
-			working_solution.terrain[i].data()
-			);
+		problem.AddResidualBlock(cost_function_right, NULL, working_solution.terrain[i].data());
     }
 
     enable_logging(solutions, working_solution);
