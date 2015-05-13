@@ -141,7 +141,6 @@ class FlatTile(object):
         pixel_colors = get_pixel_colors(image, image_pixels)
         self.image[tile_pixels[:,0], tile_pixels[:,1]] = pixel_colors
 
-
 def project_corners(internal, camera, pixel_size, im_shape, elevation):
     """Project the four corners of an image onto the ground"""
     rows, cols = im_shape[0], im_shape[1]
