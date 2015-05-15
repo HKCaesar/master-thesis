@@ -43,7 +43,9 @@ class Model0(object):
         return self.internal
 
     def fterrain(self, solution_number):
-        return self.solutions[solution_number].terrain
+        terrain = self.solutions[solution_number].terrain
+        n = terrain.shape[0]
+        return np.hstack((terrain, np.zeros((n, 1))))
 
 class ModelTerrainSolution(object):
     def __init__(self, data, ptrmap=None):

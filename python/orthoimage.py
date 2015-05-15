@@ -173,7 +173,6 @@ def produce_flat_orthoimages(data_root, project_dir, data_set, model, model_numb
         world_rect = WorldRect.from_points(np.vstack([corners_left, corners_right]))
 
         tile = FlatTile(world_rect, gsd)
-
         tile.draw_cam_trace(corners_left)
         tile.draw_cam_trace(corners_right)
         tile.project_camera(model.finternal(solution_number), cam_left, elevation, left)
