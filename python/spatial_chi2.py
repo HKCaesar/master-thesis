@@ -35,7 +35,7 @@ def spatial_chi2_plot(path, matches, image_shape, count):
     expected_counts = poisson.pmf(bins[:-1], mu=mu)*N
 
     # Mean is estimated from the data, so the number of degrees of freedom is
-    df = (len(bins)-1) - 1 - 1
+    df = (len(bins) - 1) - 1 - 1
 
     # print(list(zip(counts, [int(10*round(x, 1))/10 for x in expected_counts])))
 
@@ -47,4 +47,3 @@ def spatial_chi2_plot(path, matches, image_shape, count):
     # p = zeros(N)
     # for m in range(10, N):
     #     ...:     p[m] = spatial_distribution_plot("", matches[:m,:], shape, int(np.sqrt(m)))
-

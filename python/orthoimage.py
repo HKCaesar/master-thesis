@@ -178,7 +178,14 @@ def produce_flat_orthoimages(data_root, project_dir, data_set, model, model_numb
         tile.project_camera(model.finternal(solution_number), cam_right, elevation, right)
         tile.draw_observations(model.finternal(solution_number), cam_left, elevation, data_set.rows, data_set.cols, model.features.edges[0].obs_a)
         tile.draw_observations(model.finternal(solution_number), cam_right, elevation, data_set.rows, data_set.cols, model.features.edges[0].obs_b)
-        tile.draw_obs_pair(model.finternal(solution_number), cam_left, cam_right, elevation, data_set.rows, data_set.cols, model.features.edges[0].obs_a, model.features.edges[0].obs_b)
+        tile.draw_obs_pair(model.finternal(solution_number),
+                           cam_left,
+                           cam_right,
+                           elevation,
+                           data_set.rows,
+                           data_set.cols,
+                           model.features.edges[0].obs_a,
+                           model.features.edges[0].obs_b)
 
         io.imsave(os.path.join(tile_dir, "iteration{}.jpg".format(solution_number)), tile.image)
 
@@ -203,4 +210,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

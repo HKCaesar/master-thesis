@@ -11,7 +11,7 @@ def system(cmd):
         raise RuntimeError("Command failed: {}".format(cmd))
 
 view_dtm_script = """
-#!/bin/bash 
+#!/bin/bash
 i3-msg workspace 2
 firefox http://0.0.0.0:8000/potree/examples/dtm.xyz.html
 konsole --nofork -e /bin/bash -c "python3 -m http.server"
@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     # Call potree converter
     system("cd {}; ./PotreeConverter {} -o {} -p --color-range 0 255 --input-format xyzrgb"
-            .format(potree_dir, os.path.abspath(join(dtmdir, "dtm.xyz")), os.path.abspath(join(dtmdir, "potree"))))
+           .format(potree_dir, os.path.abspath(join(dtmdir, "dtm.xyz")), os.path.abspath(join(dtmdir, "potree"))))
 
     # Create view_dtm.sh
     view_dtm_file = join(dtmdir, "view_dtm.sh")

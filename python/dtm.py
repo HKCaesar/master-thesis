@@ -61,10 +61,9 @@ def main():
         # More properly should take a (gamma corrected?) blending of all visible images
         # or the brightest, or something
         colors = get_pixel_colors(image_left, pix_left)
-        
+
         os.makedirs(dtm_dir, exist_ok=True)
         np.savetxt(os.path.join(dtm_dir, "dtm.xyz"), np.hstack((points, colors)), "%0.0f")
 
 if __name__ == "__main__":
     main()
-

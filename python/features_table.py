@@ -54,5 +54,3 @@ if __name__ == "__main__":
             # Produce the features table
             f = open(os.path.join(root, "features_table.tex"), "w")
             f.write(format_latex_table(*make_features_table(root, subdirs, 1.0, 0.05)))
-
-
