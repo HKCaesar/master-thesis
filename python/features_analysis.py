@@ -5,9 +5,8 @@ import os
 import os.path
 import shutil
 import numpy as np
-import matplotlib.pyplot as plt
 
-from features_common import *
+from features_common import match_angle, distances_plot, angle_spread_plot, spatial_coverage_plot
 from outlier_analysis import outlier_frequency_plot
 from features_common import __file__ as features_common_filename
 from view_angle import __file__ as view_angle_filename

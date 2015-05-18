@@ -28,7 +28,7 @@ def main():
     # Load project and images
     project = Project(model_filename)
     image_left = io.imread(os.path.join(data_root, project.data_set.filenames[0]))
-    image_right = io.imread(os.path.join(data_root, project.data_set.filenames[1]))
+    # image_right = io.imread(os.path.join(data_root, project.data_set.filenames[1]))
     data_set = project.data_set
 
     # For each model
@@ -38,7 +38,7 @@ def main():
         # there's only 1 final
         # what about orthoimage?
         cam_left = model.fexternal(solution_number)[0]
-        cam_right = model.fexternal(solution_number)[1]
+        # cam_right = model.fexternal(solution_number)[1]
         points = model.fterrain(solution_number)
 
         # For each point in the DTM, project to camera and extract color

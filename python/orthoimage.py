@@ -3,8 +3,8 @@
 import sys
 import os.path
 import numpy as np
-from skimage import io, draw
-from itertools import chain, combinations
+from skimage import io
+from itertools import combinations
 
 from PIL import Image, ImageDraw
 
@@ -105,7 +105,6 @@ class FlatTile(object):
         world_points_a = pymodel0.model0_inverse_array(internal, cam_a, sensors_a, elevation)
         world_points_b = pymodel0.model0_inverse_array(internal, cam_b, sensors_b, elevation)
 
-        size = 3
         for (point_a, point_b) in zip(world_points_a, world_points_b):
             i_a, j_a = self.world_to_image(point_a[:2])
             i_b, j_b = self.world_to_image(point_b[:2])

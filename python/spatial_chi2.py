@@ -1,6 +1,5 @@
 import numpy as np
-from scipy.stats import poisson, chi2, chisquare
-import matplotlib.pyplot as plt
+from scipy.stats import poisson, chi2
 
 def divide_count(matches, image_shape, count):
     """

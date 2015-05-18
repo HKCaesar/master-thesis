@@ -4,7 +4,6 @@ import sys
 import os
 import os.path
 from os.path import join
-import shutil
 import stat
 
 def system(cmd):

@@ -5,7 +5,7 @@ import os
 import os.path
 import numpy as np
 
-from features_common import base_plot, match_angle, spatial_coverage
+from features_common import match_angle, spatial_coverage
 
 def make_features_table(root, subdirs, outlier_threshold, fraction_limit):
     """
