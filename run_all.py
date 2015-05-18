@@ -34,11 +34,15 @@ def geosolve_dir(name):
 
     system("mkdir -p {}".format(project_dir))
     do_log("./build/geosolve ../data {} base_{}".format(project_dir, name))
+    do_log("./build/geosolve ../data {} model_terrain".format(project_dir, name))
     do_log("./build/geosolve ../data {} features".format(project_dir))
     do_log("./build/geosolve ../data {} solve".format(project_dir))
     do_log("./python/orthoimage.py ../data {}".format(project_dir))
     do_log("./python/dtm.py ../data {}".format(project_dir))
-    do_log("./python/potree.py {}".format(os.path.join(project_dir, "flatdtm")))
+    # Call potree.py on all dtm* directoris
+    for dtmdir in os.listdir(project_dir):
+        if dtmdir.startswith("dtm"):
+            do_log("./python/potree.py {}".format(os.path.join(project_dir, dtmdir)))
 
 def geosolve():
     if len(sys.argv) < 3:
