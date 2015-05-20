@@ -32,7 +32,7 @@ public:
     int number_of_samples;
     int size_of_samples;
 
-    std::shared_ptr<Model> model;
+    std::shared_ptr<Model> base_model;
 };
 
 #endif
