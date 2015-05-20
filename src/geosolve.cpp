@@ -17,6 +17,7 @@
 #include "project.h"
 #include "model0.h"
 #include "model_terrain.h"
+#include "bootstrap.h"
 
 using std::tuple;
 using std::make_tuple;
@@ -141,6 +142,25 @@ void model_terrain(const string&, const string& project_dir) {
     project.to_file(project_filename);
 }
 
+void bootstrap(const string&, const string& project_dir) {
+    string project_filename = project_dir + "/project.json";
+    Project project = Project::from_file(project_filename);
+    std::cout << "Adding bootstrap to last Model" << std::endl;
+    // TODO how to choose bootstrap parameters here?
+    std::shared_ptr<Bootstrap> boot(new Bootstrap());
+    boot->number_of_samples = 2;
+    boot->size_of_samples = 2;
+    boot->solve();
+    project.bootstraps.push_back(boot);
+    project.to_file(project_filename);
+}
+
+void help(const string&, const string&, const std::map<string, std::function<void (const strin&, const string&)>>& commands) {
+    for (auto& it : comamnds) {
+        std::cout << it->first << std::endl;
+    }
+}
+
 int main(int argc, char* argv[]) {
     google::InitGoogleLogging(argv[0]);
 
@@ -161,8 +181,11 @@ int main(int argc, char* argv[]) {
         {"model_terrain", model_terrain},
         {"loadtest", load_test},
         {"features", features},
-        {"solve", solve}
+        {"solve", solve},
+        {"bootstrap", bootstrap}
     };
+
+    commands.insert("help", std::bind(help, _1, _2, commands));
 
     try {
         commands.at(command)(data_dir, project_dir);

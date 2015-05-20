@@ -9,6 +9,7 @@
 #include <cereal/archives/json.hpp>
 #include "internal.h"
 
+
 // Base class for models' cost functions
 // Provides a factory to hide the construction of the autodiff'ed CostFunction object
 template <typename CostFunctor,

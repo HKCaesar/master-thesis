@@ -9,6 +9,7 @@
 #include "data_set.h"
 #include "image_features.h"
 #include "model.h"
+#include "bootstrap.h"
 
 // Overload std::array for JSON to use []
 namespace cereal {
@@ -37,6 +38,7 @@ struct Project {
     std::shared_ptr<DataSet> data_set;
     std::vector<std::shared_ptr<FeaturesGraph>> features_list;
     std::vector<std::shared_ptr<Model>> models;
+    std::vector<std::shared_ptr<Bootstrap>> bootstraps;
 
     static Project from_file(const std::string& filename) {
         Project p;
@@ -58,9 +60,10 @@ struct Project {
 
     template <class Archive>
     void serialize(Archive& ar) {
-        ar(cereal::make_nvp("data_set", data_set),
-           cereal::make_nvp("features_list", features_list),
-           cereal::make_nvp("models", models));
+        ar(NVP(data_set),
+           NVP(features_list),
+           NVP(models),
+           NVP(bootstraps));
     }
 };
 
