@@ -72,3 +72,13 @@ internal_t Model0::final_internal() const {
 vector<array<double, 6>> Model0::final_external() const {
     return solutions.back().cameras;
 }
+
+vector<array<double, 3>> Model0::final_terrain() const {
+    const vector<array<double, 2>>& terrain = solutions.back().terrain;
+    vector<array<double, 3>> result(terrain.size());
+    for (size_t i = 0; i < result.size(); i++) {
+        result[i] = array<double, 3> {terrain[i][0], terrain[i][1], 0.0};
+    }
+    return result;
+}
+

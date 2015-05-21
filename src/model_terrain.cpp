@@ -83,3 +83,7 @@ internal_t ModelTerrain::final_internal() const {
 vector<array<double, 6>> ModelTerrain::final_external() const {
     return cameras;
 }
+
+vector<array<double, 3>> ModelTerrain::final_terrain() const {
+    return solutions.back().terrain;
+}

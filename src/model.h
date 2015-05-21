@@ -74,6 +74,7 @@ public:
     // Should return the best known value after optimization
     virtual std::vector<std::array<double, 6>> final_external() const { throw UnprovidedFinal("final_external"); }
     virtual internal_t final_internal() const { throw UnprovidedFinal("final_internal"); }
+    virtual std::vector<std::array<double, 3>> final_terrain() const { throw UnprovidedFinal("final_terrain"); }
 
     // Enable logging of solutions at every step
     template <typename T>

@@ -53,6 +53,7 @@ public:
 
     virtual internal_t final_internal() const override;
     virtual vector<array<double, 6>> final_external() const override;
+    virtual vector<array<double, 3>> final_terrain() const override;
 
     template <class Archive>
     void serialize(Archive& ar) {
