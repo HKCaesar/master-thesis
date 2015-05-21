@@ -146,15 +146,16 @@ void model_terrain(const string&, const string& project_dir) {
 void bootstrap(const string&, const string& project_dir) {
     string project_filename = project_dir + "/project.json";
     Project project = Project::from_file(project_filename);
-    std::cout << "Bootstraping all models" << std::endl;
+    std::cout << "Bootstraping models" << std::endl;
     for (auto& model : project.models) {
-        // TODO how to choose bootstrap parameters here?
-        std::shared_ptr<Bootstrap> boot(new Bootstrap());
-        boot->base_model = model;
-        boot->number_of_samples = 20;
-        boot->size_of_samples = 10;
-        boot->solve();
-        project.bootstraps.push_back(boot);
+        if (model->bootstrapable()) {
+            std::shared_ptr<Bootstrap> boot(new Bootstrap());
+            boot->base_model = model;
+            boot->size_of_samples = model->features->number_of_matches;
+            boot->number_of_samples = 10*boot->size_of_samples;
+            boot->solve();
+            project.bootstraps.push_back(boot);
+        }
     }
     project.to_file(project_filename);
 }

@@ -51,6 +51,8 @@ public:
     virtual ModelTerrain* clone() override { return new ModelTerrain(*this); }
     virtual ceres::Solver::Summary solve() override;
 
+    virtual bool bootstrapable () const override { return false; }
+
     virtual internal_t final_internal() const override;
     virtual vector<array<double, 6>> final_external() const override;
     virtual vector<array<double, 3>> final_terrain() const override;

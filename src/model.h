@@ -68,6 +68,8 @@ public:
     // note this is a shallow copy because the features pointer is a reference
     virtual Model* clone() = 0;
     virtual ceres::Solver::Summary solve() = 0;
+    // True if it makes sense to bootstrap this model
+    virtual bool bootstrapable() const = 0;
     virtual ~Model() {}
 
     // Optional interfaces for initialising another model with this as parent
