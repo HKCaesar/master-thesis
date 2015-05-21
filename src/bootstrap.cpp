@@ -46,6 +46,7 @@ void Bootstrap::solve() {
         bs_sample->features->number_of_matches = size_of_samples;
         edge.obs_a = sample(edge.obs_a, indexes);
         edge.obs_b = sample(edge.obs_b, indexes);
+        bs_sample->options.minimizer_progress_to_stdout = false;
         bs_sample->solve();
         bootstrap_models[i] = bs_sample;
     }

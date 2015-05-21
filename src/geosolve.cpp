@@ -127,7 +127,8 @@ void solve(const string&, const string& project_dir) {
             if (!model->features || model->features->edges.size() == 0 || model->features->computed == false) {
                 throw std::runtime_error("Attempting to solve model but no observations are available");
             }
-            model->solve();
+            ceres::Solver::Summary summary = model->solve();
+            std::cout << summary.FullReport() << "\n";
             model->solved = true;
         }
     }

@@ -1,7 +1,7 @@
 #include <memory>
 #include "model0.h"
 
-void Model0::solve() {
+ceres::Solver::Summary Model0::solve() {
     ceres::Problem problem;
     // Note: model0 only works with 2 cams, so will only consider the first edge
     obs_pair& edge = features->edges[0];
@@ -59,7 +59,10 @@ void Model0::solve() {
 
     problem.SetParameterBlockConstant(working_solution.cameras[0].data());
 
-    solve_and_log(problem, default_options(), solutions, working_solution);
+    enable_logging(solutions, working_solution);
+    ceres::Solver::Summary summary;
+    ceres::Solve(options, &problem, &summary);
+    return summary;
 }
 
 internal_t Model0::final_internal() const {

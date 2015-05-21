@@ -51,7 +51,7 @@ public:
     };
 
     virtual Model0* clone() override { return new Model0(*this); }
-    virtual void solve() override;
+    virtual ceres::Solver::Summary solve() override;
 
     virtual internal_t final_internal() const override;
     virtual vector<array<double, 6>> final_external() const override;

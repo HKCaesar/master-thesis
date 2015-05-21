@@ -30,7 +30,7 @@ vector<array<double, 3>> inverse_features_average(const obs_pair& edge, const do
     return points;
 }
 
-void ModelTerrain::solve() {
+ceres::Solver::Summary ModelTerrain::solve() {
     if (!parent) {
         throw("Solving ModelTerrain but no parent provided.");
     }
@@ -70,7 +70,10 @@ void ModelTerrain::solve() {
 		problem.AddResidualBlock(cost_function_right, NULL, working_solution.terrain[i].data());
     }
 
-    solve_and_log(problem, default_options(), solutions, working_solution);
+    enable_logging(solutions, working_solution);
+    ceres::Solver::Summary summary;
+    ceres::Solve(options, &problem, &summary);
+    return summary;
 }
 
 internal_t ModelTerrain::final_internal() const {
