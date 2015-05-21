@@ -32,7 +32,7 @@ class Model0Solution(object):
 class Model0(object):
     def __init__(self, data, ptrmap=None):
         if ptrmap is not None:
-            self.features = ptrmap.load(ImageGraph, data["base"]["features"]["ptr_wrapper"])
+            self.features = ptrmap.load(ImageGraph, data["base"]["features"])
         self.internal = np.array(data["internal"], dtype=np.float64)
         self.solutions = [Model0Solution(sol) for sol in data["solutions"]]
 
@@ -54,7 +54,7 @@ class ModelTerrainSolution(object):
 class ModelTerrain(object):
     def __init__(self, data, ptrmap=None):
         if ptrmap is not None:
-            self.features = ptrmap.load(ImageGraph, data["base"]["features"]["ptr_wrapper"])
+            self.features = ptrmap.load(ImageGraph, data["base"]["features"])
         self.internal = np.array(data["internal"], dtype=np.float64)
         self.cameras = np.array(data["cameras"], dtype=np.float64)
         self.solutions = [ModelTerrainSolution(sol) for sol in data["solutions"]]
@@ -75,23 +75,45 @@ polymorphic_models = {
 }
 
 class PtrMap(object):
+    intmax = 2147483648
     def __init__(self):
         self.ptrmap = {}
 
-    def load(self, Type, ptr_wrapper):
-        intmax = 2147483648
+    def load(self, Type, obj):
+        ptr_wrapper = obj["ptr_wrapper"]
         ptr_id = ptr_wrapper["id"]
-        if ptr_id > intmax:
+        if ptr_id > self.intmax:
             obj = Type(ptr_wrapper["data"], self)
-            self.ptrmap[ptr_id - intmax] = obj
+            self.ptrmap[ptr_id - self.intmax] = obj
             return obj
         else:
             return self.ptrmap[ptr_id]
+
+    def load_polymorphic(self, obj, type_map):
+        ptr_wrapper = obj["ptr_wrapper"]
+        ptr_id = ptr_wrapper["id"]
+        if ptr_id > self.intmax:
+            Type = type_map[obj["polymorphic_name"]]
+            obj = Type(ptr_wrapper["data"], self)
+            self.ptrmap[ptr_id - self.intmax] = obj
+            return obj
+        else:
+            return self.ptrmap[ptr_id]
+
+class Bootstrap(object):
+    def __init__(self, data, ptrmap=None):
+        if ptrmap is not None:
+            self.base_model = ptrmap.load_polymorphic(data["base_model"], polymorphic_models)
+        self.number_of_samples = data["number_of_samples"]
+        self.size_of_samples = data["size_of_samples"]
+        self.internals = np.array(data["internals"], dtype=np.float64)
+        self.externals = np.array(data["externals"], dtype=np.float64)
 
 class Project(object):
     def __init__(self, filename):
         ptrmap = PtrMap()
         p = json.load(open(filename))
-        self.data_set = ptrmap.load(DataSet, p["data_set"]["ptr_wrapper"])
-        self.features = [ptrmap.load(ImageGraph, ig["ptr_wrapper"]) for ig in p["features_list"]]
-        self.models = [ptrmap.load(polymorphic_models[m["polymorphic_name"]], m["ptr_wrapper"]) for m in p["models"]]
+        self.data_set = ptrmap.load(DataSet, p["data_set"])
+        self.features = [ptrmap.load(ImageGraph, ig) for ig in p["features_list"]]
+        self.models = [ptrmap.load_polymorphic(m, polymorphic_models) for m in p["models"]]
+        self.bootstraps = [ptrmap.load(Bootstrap, boot) for boot in p["bootstraps"]]
