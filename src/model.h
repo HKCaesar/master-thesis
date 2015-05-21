@@ -51,19 +51,17 @@ struct UnprovidedFinal : public std::runtime_error {
 };
 
 // Base class for models
-// Must overwrite solve()
+// Must overwrite solve() and clone()
 class Model {
 public:
 
     Model() : solved(false) {
-        // Solver options common to all models
-        options.linear_solver_type = ceres::DENSE_SCHUR;
-        options.minimizer_progress_to_stdout = true;
-        options.max_linear_solver_iterations = 3;
-        options.max_num_iterations = 30;
-        options.num_threads = 1;
     }
 
+    // virtual constructor pattern to allow polymorphic cloning
+    // see https://isocpp.org/wiki/faq/virtual-functions#virtual-ctors
+    // note this is a shallow copy because the features pointer is a reference
+    virtual Model* clone() = 0;
     virtual void solve() = 0;
     virtual ~Model() {}
 
@@ -72,12 +70,28 @@ public:
     virtual std::vector<std::array<double, 6>> final_external() const { throw UnprovidedFinal("final_external"); }
     virtual internal_t final_internal() const { throw UnprovidedFinal("final_internal"); }
 
-    // Enable logging of solutions at every step
+    // Solver options common to all models
+    ceres::Solver::Options default_options() const {
+        ceres::Solver::Options options;
+        options.linear_solver_type = ceres::DENSE_SCHUR;
+        options.minimizer_progress_to_stdout = true;
+        options.max_linear_solver_iterations = 3;
+        options.max_num_iterations = 30;
+        options.num_threads = 1;
+        return options;
+    }
+
+    // Solve problem and log solution at every iteration step
     template <typename T>
-    void enable_logging(std::vector<T>& solutions, const T& working_solution) {
+    void solve_and_log(ceres::Problem& problem, ceres::Solver::Options options, std::vector<T>& solutions, const T& working_solution) const {
+        std::shared_ptr<ceres::IterationCallback> solution_logger(new LogSolutionCallback<T>(solutions, working_solution));
+
         options.update_state_every_iteration = true;
-        solution_logger.reset(new LogSolutionCallback<T>(solutions, working_solution));
         options.callbacks.push_back(solution_logger.get());
+
+        ceres::Solver::Summary summary;
+        ceres::Solve(options, &problem, &summary);
+        std::cout << summary.FullReport() << "\n";
     }
 
     template <class Archive>
@@ -88,9 +102,6 @@ public:
 
     bool solved;
     std::shared_ptr<FeaturesGraph> features;
-    std::unique_ptr<ceres::IterationCallback> solution_logger;
-    ceres::Problem problem;
-    ceres::Solver::Options options;
 };
 
 #endif

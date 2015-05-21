@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <memory>
 #include "ceres/ceres.h"
 #include <cereal/types/array.hpp>
 #include <cereal/types/memory.hpp>
@@ -14,9 +15,6 @@
 #include "model.h"
 #include "internal.h"
 
-using std::vector;
-using std::array;
-
 // Takes a Model and perform the bootstrap method on it
 class Bootstrap {
 public:
@@ -26,12 +24,11 @@ public:
     void serialize(Archive& ar) {
         ar(NVP(number_of_samples),
            NVP(size_of_samples),
-           NVP(model));
+           NVP(base_model));
     }
 
-    int number_of_samples;
-    int size_of_samples;
-
+    size_t number_of_samples;
+    size_t size_of_samples;
     std::shared_ptr<Model> base_model;
 };
 

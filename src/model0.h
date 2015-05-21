@@ -50,6 +50,7 @@ public:
         }
     };
 
+    virtual Model0* clone() override { return new Model0(*this); }
     virtual void solve() override;
 
     virtual internal_t final_internal() const override;

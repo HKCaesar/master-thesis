@@ -35,6 +35,7 @@ void ModelTerrain::solve() {
         throw("Solving ModelTerrain but no parent provided.");
     }
 
+    ceres::Problem problem;
     // Initialize cameras and internals from parent
     internal = parent->final_internal();
     cameras = parent->final_external();
@@ -69,9 +70,13 @@ void ModelTerrain::solve() {
 		problem.AddResidualBlock(cost_function_right, NULL, working_solution.terrain[i].data());
     }
 
-    enable_logging(solutions, working_solution);
+    solve_and_log(problem, default_options(), solutions, working_solution);
+}
 
-    ceres::Solver::Summary summary;
-    ceres::Solve(options, &problem, &summary);
-    std::cout << summary.FullReport() << "\n";
+internal_t ModelTerrain::final_internal() const {
+    return internal;
+}
+
+vector<array<double, 6>> ModelTerrain::final_external() const {
+    return cameras;
 }
