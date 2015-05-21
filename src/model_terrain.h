@@ -30,10 +30,6 @@ struct ModelTerrainReprojectionError : CostFunction<ModelTerrainReprojectionErro
 	template <typename T>
 	bool operator()(const T* const point, T* residuals) const {
         // Subtract observed coordinates
-        // TODO: rename proj function
-    // victor: Missing point[2]??
-    // this supports only 2D points, should it be another function?
-        // T ext[] = {T(external[0]), T(external[1]), T(external[2]), T(external[3]), T(external[4]), T(external[5])};
         bool r = pinhole_projection<T, double, double, T>(internal.data(), external.data(), point, residuals);
         residuals[0] -= T(observed.x);
         residuals[1] -= T(observed.y);
