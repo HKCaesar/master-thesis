@@ -30,9 +30,7 @@ void Bootstrap::solve() {
     std::random_device rd;
     RandomNumberGenerator rng(rd());
 
-    // Bootstrap samples
-    vector<shared_ptr<Model>> bootstrap_models(number_of_samples);
-
+    // For each bootstrap sample
     for (size_t i = 0; i < number_of_samples; i++) {
         // Deep-copy base model using 'virtual constructor' idiom
         shared_ptr<Model> bs_sample(base_model->clone());
@@ -41,25 +39,16 @@ void Bootstrap::solve() {
         // Only consider first edge for now, this should be extended
         obs_pair& edge = bs_sample->features->edges[0];
 
-        // Bootstrap and solve it
+        // Bootstrap and solve
         vector<size_t> indexes = sample_with_replacement(rng, edge.obs_a.size(), size_of_samples);
         bs_sample->features->number_of_matches = size_of_samples;
         edge.obs_a = sample(edge.obs_a, indexes);
         edge.obs_b = sample(edge.obs_b, indexes);
         bs_sample->options.minimizer_progress_to_stdout = false;
         bs_sample->solve();
-        bootstrap_models[i] = bs_sample;
-    }
 
-    // Compute the bootstrap means and stds
-    // or just export data to make a density map (distribution of results)
-    for (auto const& model : bootstrap_models) {
-        for (auto& ext : model->final_external()) {
-            for (auto const& item : ext) {
-                std::cout << item << " ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << std::endl;
+        // Save
+        externals.push_back(bs_sample->final_external());
+        internals.push_back(bs_sample->final_internal());
     }
 }

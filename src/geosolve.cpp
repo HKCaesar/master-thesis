@@ -151,7 +151,7 @@ void bootstrap(const string&, const string& project_dir) {
         // TODO how to choose bootstrap parameters here?
         std::shared_ptr<Bootstrap> boot(new Bootstrap());
         boot->base_model = model;
-        boot->number_of_samples = 5;
+        boot->number_of_samples = 20;
         boot->size_of_samples = 10;
         boot->solve();
         project.bootstraps.push_back(boot);

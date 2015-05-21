@@ -24,12 +24,17 @@ public:
     void serialize(Archive& ar) {
         ar(NVP(number_of_samples),
            NVP(size_of_samples),
-           NVP(base_model));
+           NVP(base_model),
+           NVP(internals),
+           NVP(externals));
     }
 
     size_t number_of_samples;
     size_t size_of_samples;
     std::shared_ptr<Model> base_model;
+
+    std::vector<internal_t> internals;
+    std::vector<std::vector<std::array<double, 6>>> externals;
 };
 
 #endif
