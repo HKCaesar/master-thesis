@@ -152,7 +152,7 @@ void bootstrap(const string&, const string& project_dir) {
             std::shared_ptr<Bootstrap> boot(new Bootstrap());
             boot->base_model = model;
             boot->size_of_samples = model->features->number_of_matches;
-            boot->number_of_samples = 10*boot->size_of_samples;
+            boot->number_of_samples = 100;
             boot->solve();
             project.bootstraps.push_back(boot);
         }
