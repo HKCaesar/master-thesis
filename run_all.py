@@ -44,6 +44,7 @@ def geosolve_dir(name):
     for dtmdir in os.listdir(project_dir):
         if dtmdir.startswith("dtm"):
             do_log("./python/potree.py {}".format(os.path.join(project_dir, dtmdir)))
+    do_log("./python/bootstrap.py {}".format(project_dir))
 
 def geosolve():
     if len(sys.argv) < 3:

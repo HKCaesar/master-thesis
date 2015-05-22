@@ -32,6 +32,9 @@ void Bootstrap::solve() {
 
     // For each bootstrap sample
     for (size_t i = 0; i < number_of_samples; i++) {
+        std::cout << '\r' << i+1 << "/" << number_of_samples;
+        std::cout.flush();
+
         // Deep-copy base model using 'virtual constructor' idiom
         shared_ptr<Model> bs_sample(base_model->clone());
         bs_sample->features.reset(new FeaturesGraph(*bs_sample->features));
@@ -51,4 +54,5 @@ void Bootstrap::solve() {
         externals.push_back(bs_sample->final_external());
         internals.push_back(bs_sample->final_internal());
     }
+    std::cout << std::endl;
 }
