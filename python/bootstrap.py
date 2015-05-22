@@ -51,31 +51,29 @@ def main():
     project_dir = sys.argv[1]
     project = Project(join(project_dir, "project.json"))
 
+    # For each bootstraped model
     for (bootstrap_number, bootstrap) in enumerate(project.bootstraps):
         boot_dir = os.path.abspath(join(project_dir, "bootstrap{}-{}".format(bootstrap_number, type(bootstrap.base_model).__name__)))
         os.makedirs(boot_dir, exist_ok=True)
 
-        # Covariance matrices
-        ext_covs = covariance_externals(bootstrap)
-        int_cov = covariance_internals(bootstrap)
-
-        # X, Y, Z and angles
-        for (cam_number, S) in enumerate(ext_covs):
-            f, ax = plot_covariance_matrix(S[:3, :3])
-            f.savefig(join(boot_dir, "covariance-cam{}-pos.pdf".format(cam_number)), bbox_inches='tight')
-            f, ax = plot_covariance_matrix(S[3:, 3:])
-            f.savefig(join(boot_dir, "covariance-cam{}-angles.pdf".format(cam_number)), bbox_inches='tight')
-
         # Interior
-        f, ax = plot_covariance_matrix(int_cov)
+        f, ax = plot_covariance_matrix(np.cov(bootstrap.internals, rowvar=0))
         f.savefig(join(boot_dir, "covariance-interior.pdf"), bbox_inches='tight')
 
-        # Scatter and distribution plots
+        # For each camera
         for (cam_number, cam) in enumerate(extract_cameras(bootstrap)):
+            # Scatter and distribution plots
             f, ax = plot_scatter(cam[:,0], cam[:, 1])
             f.savefig(join(boot_dir, "cam{}-xy.pdf".format(cam_number)), bbox_inches='tight')
             f, ax = plot_distribution(cam[:,2])
             f.savefig(join(boot_dir, "cam{}-z.pdf".format(cam_number)), bbox_inches='tight')
+
+            # X, Y, Z and angles covariances matrices
+            S = np.cov(cam, rowvar=0)
+            f, ax = plot_covariance_matrix(S[:3, :3])
+            f.savefig(join(boot_dir, "covariance-cam{}-pos.pdf".format(cam_number)), bbox_inches='tight')
+            f, ax = plot_covariance_matrix(S[3:, 3:])
+            f.savefig(join(boot_dir, "covariance-cam{}-angles.pdf".format(cam_number)), bbox_inches='tight')
 
 if __name__ == "__main__":
     main()
