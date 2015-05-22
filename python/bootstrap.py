@@ -9,24 +9,6 @@ from project import Project
 from features_common import base_plot
 from IPython import embed
 
-def extract_cameras(bootstrap):
-    number_of_samples, number_of_cameras, six = bootstrap.externals.shape
-    assert number_of_samples == bootstrap.number_of_samples
-    assert six == 6
-    for cam_number in range(number_of_cameras):
-        yield bootstrap.externals[:, cam_number, :]
-
-def covariance_externals(bootstrap):
-    "List of covariance matrices of external orientation of each camera"
-    return [np.cov(cam, rowvar=0) for cam in extract_cameras(bootstrap)]
-
-def covariance_internals(bootstrap):
-    "Covariance matrix of internal orientation"
-    number_of_samples, four = bootstrap.internals.shape
-    assert number_of_samples == bootstrap.number_of_samples
-    assert four == 4
-    return np.cov(bootstrap.internals, rowvar=0)
-
 def plot_covariance_matrix(S):
     "Make a covariance matrix plot"
     f, ax = base_plot()
@@ -61,7 +43,7 @@ def main():
         f.savefig(join(boot_dir, "covariance-interior.pdf"), bbox_inches='tight')
 
         # For each camera
-        for (cam_number, cam) in enumerate(extract_cameras(bootstrap)):
+        for (cam_number, cam) in enumerate(bootstrap.extract_cameras()):
             # Scatter and distribution plots
             f, ax = plot_scatter(cam[:,0], cam[:, 1])
             f.savefig(join(boot_dir, "cam{}-xy.pdf".format(cam_number)), bbox_inches='tight')

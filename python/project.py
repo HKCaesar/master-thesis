@@ -109,6 +109,14 @@ class Bootstrap(object):
         self.internals = np.array(data["internals"], dtype=np.float64)
         self.externals = np.array(data["externals"], dtype=np.float64)
 
+    def extract_cameras(self):
+        "Generator for cameras externals"
+        number_of_samples, number_of_cameras, six = self.externals.shape
+        assert number_of_samples == self.number_of_samples
+        assert six == 6
+        for cam_number in range(number_of_cameras):
+            yield self.externals[:, cam_number, :]
+
 class Project(object):
     def __init__(self, filename):
         ptrmap = PtrMap()
