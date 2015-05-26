@@ -74,6 +74,10 @@ def plot_distribution(X):
     ax.set_ylabel("Frequency")
     return f, ax
 
+def savefigure(f, name):
+    f.savefig(name + ".pdf", bbox_inches="tight")
+    f.savefig(name + ".png", bbox_inches="tight")
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: ./bootstrap.py <project_dir>")
@@ -89,23 +93,23 @@ def main():
 
         # Interior
         f, ax = plot_covariance_matrix(np.corrcoef(bootstrap.internals, rowvar=0), ["fx", "fy", "ppx", "ppy", "ps"])
-        f.savefig(join(boot_dir, "covariance-interior.pdf"), bbox_inches='tight')
+        savefigure(f, join(boot_dir, "covariance-interior"))
 
         # For each camera
         for (cam_number, cam) in enumerate(bootstrap.extract_cameras()):
             # Scatter and distribution plots
             f, ax = plot_scatter(cam[:,0], cam[:, 1])
-            f.savefig(join(boot_dir, "cam{}-xy.pdf".format(cam_number)), bbox_inches='tight')
+            savefigure(f, join(boot_dir, "cam{}-xy".format(cam_number)))
             f, ax = plot_distribution(cam[:,2])
             ax.set_xlabel("Z")
-            f.savefig(join(boot_dir, "cam{}-z.pdf".format(cam_number)), bbox_inches='tight')
+            savefigure(f, join(boot_dir, "cam{}-z".format(cam_number)))
 
             # X, Y, Z and angles covariances matrices
             S = np.corrcoef(cam, rowvar=0)
             f, ax = plot_covariance_matrix(S[:3, :3], ["X", "Y", "Z"])
-            f.savefig(join(boot_dir, "covariance-cam{}-pos.pdf".format(cam_number)), bbox_inches='tight')
+            savefigure(f, join(boot_dir, "covariance-cam{}-pos".format(cam_number)))
             f, ax = plot_covariance_matrix(S[3:, 3:], ["ang1", "ang2", "ang3"])
-            f.savefig(join(boot_dir, "covariance-cam{}-angles.pdf".format(cam_number)), bbox_inches='tight')
+            savefigure(f, join(boot_dir, "covariance-cam{}-angles".format(cam_number)))
 
 if __name__ == "__main__":
     main()
