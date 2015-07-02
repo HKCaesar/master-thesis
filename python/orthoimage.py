@@ -161,7 +161,7 @@ def produce_flat_orthoimages(data_root, project_dir, data_set, model, model_numb
     os.makedirs(tile_dir, exist_ok=True)
     number_of_solutions = len(model.solutions)
 
-    def produce(solution_number, gsd):
+    def produce(solution_number, gsd, name=None):
         print("{}/{}".format(solution_number+1, number_of_solutions))
         cam_left = model.fexternal(solution_number)[0]
         cam_right = model.fexternal(solution_number)[1]
@@ -187,10 +187,12 @@ def produce_flat_orthoimages(data_root, project_dir, data_set, model, model_numb
                            model.features.edges[0].obs_a,
                            model.features.edges[0].obs_b)
 
-        io.imsave(os.path.join(tile_dir, "iteration{}.jpg".format(solution_number)), tile.image)
+        if name is None:
+            name = "iteration{}.jpg".format(solution_number)
+        io.imsave(os.path.join(tile_dir, name), tile.image)
 
     produce(0, 0.25)
-    produce(number_of_solutions-1, 0.25)
+    produce(number_of_solutions-1, 0.25, name="last.jpg")
 
 # TODO: profile orthoimage for performance
 # TODO: check why first two solutions are identical
