@@ -108,7 +108,8 @@ def main():
             S = np.corrcoef(cam, rowvar=0)
             f, ax = plot_covariance_matrix(S[:3, :3], ["X", "Y", "Z"])
             savefigure(f, join(boot_dir, "covariance-cam{}-pos".format(cam_number)))
-            f, ax = plot_covariance_matrix(S[3:, 3:], ["ang1", "ang2", "ang3"])
+            f, ax = plot_covariance_matrix(S[3:, 3:], [r"$\Omega$", "$\phi$",
+                r"$\kappa$"])
             savefigure(f, join(boot_dir, "covariance-cam{}-angles".format(cam_number)))
 
 if __name__ == "__main__":
